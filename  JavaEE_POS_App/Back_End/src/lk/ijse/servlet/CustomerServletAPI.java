@@ -2,9 +2,7 @@ package lk.ijse.servlet;
 
 import lk.ijse.db.DBConnection;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -85,6 +83,33 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Content-Type", "application/json");
+        JsonReader reader = Json.createReader(req.getReader());
+        JsonObject jsonObject = reader.readObject();
+        String nic = jsonObject.getString("nic");
+        String name = jsonObject.getString("name");
+        String tel = jsonObject.getString("tel");
+        String address = jsonObject.getString("address");
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE customer SET name=?,tel=?,address=? WHERE nic=?");
+            preparedStatement.setObject(1, name);
+            preparedStatement.setObject(2, tel);
+            preparedStatement.setObject(3, address);
+            preparedStatement.setObject(4, nic);
+            if (preparedStatement.executeUpdate() > 0) {
+                resp.getWriter().print(
+                        Json.createObjectBuilder()
+                                .add("state", "Ok")
+                                .add("message", "Successfully Updated...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }
+        } catch (SQLException e) {
+
+        }
 
     }
 
@@ -111,8 +136,8 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin","*");
-        resp.addHeader("Access-Control-Allow-Methods","DELETE");
-        resp.addHeader("Access-Control-Allow-Headers","Content-Type");
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
+        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 }

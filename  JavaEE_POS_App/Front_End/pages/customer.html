@@ -152,38 +152,41 @@
                                         <form class="row g-3 text-start">
                                             <div class="col-12">
                                                 <label for="inputUpdateNIC" class="form-label">NIC</label>
-                                                <input type="text" class="form-control" id="inputUpdateNIC"
+                                                <input name="nic" type="text" class="form-control" id="inputUpdateNIC"
                                                        placeholder="NIC">
                                             </div>
                                             <div class="col-12">
                                                 <label for="inputUpdateName" class="form-label">Name</label>
-                                                <input type="text" class="form-control" id="inputUpdateName"
+                                                <input name="name" type="text" class="form-control" id="inputUpdateName"
                                                        placeholder="Name">
                                                 <p id="inputUpdateNameAlert" class="m-0"
                                                    style="font-size: 10px; color: red"></p>
                                             </div>
                                             <div class="col-12">
                                                 <label for="inputUpdateTel" class="form-label">Tel</label>
-                                                <input type="text" class="form-control" id="inputUpdateTel"
+                                                <input name="tel" type="text" class="form-control" id="inputUpdateTel"
                                                        placeholder="Tel">
                                                 <p id="inputUpdateTelAlert" class="m-0"
                                                    style="font-size: 10px; color: red"></p>
                                             </div>
                                             <div class="col-12">
                                                 <label for="inputUpdateAddress" class="form-label">Address</label>
-                                                <input type="text" class="form-control" id="inputUpdateAddress"
+                                                <input name="address" type="text" class="form-control"
+                                                       id="inputUpdateAddress"
                                                        placeholder="Address">
                                                 <p id="inputUpdateAddressAlert" class="m-0"
                                                    style="font-size: 10px; color: red"></p>
                                             </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                                    Close
+                                                </button>
+                                                <button type="button" class="btn btn-warning">Clear</button>
+                                                <button id="customerUpdateButton" type="button" class="btn btn-primary">
+                                                    Update
+                                                </button>
+                                            </div>
                                         </form><!--customer form-->
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close
-                                        </button>
-                                        <button type="button" class="btn btn-warning">Clear</button>
-                                        <button id="customerUpdateButton" type="button" class="btn btn-primary">Update
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -233,7 +236,6 @@
         getAllCustomers();
     });
 
-
     $("#save-customer").click(function () {
         let dataForm = $("#customer-form").serialize();
         $.ajax({
@@ -264,11 +266,63 @@
                         alert(rep.message);
                     },
                     error: function (error) {
-                        alert(error.message);
+                        alert(error.responseJSON.message);
                     }
                 })
             }
         });
+    }
+
+    $("#customerUpdateButton").click(function () {
+        let nic = $('#inputUpdateNIC').val();
+        let name = $('#inputUpdateName').val();
+        let tel = $('#inputUpdateTel').val();
+        let address = $('#inputUpdateAddress').val();
+        let customer = {
+            "nic": nic,
+            "name": name,
+            "tel": tel,
+            "address": address
+        }
+        let consent = confirm("Do you want to Update.?");
+        if (consent) {
+            $.ajax({
+                url: "http://localhost:8080/pos_app/pages/customer",
+                method: "put",
+                contentType: "application/json",
+                data: JSON.stringify(customer),
+                success: function (rep) {
+                    getAllCustomers();
+                    alert(rep.message);
+                },
+                error: function (error) {
+                    alert(error.responseJSON.message);
+                }
+            })
+        }
+    });
+
+    function setDetailsForUpdateForm() {
+        $("#customer-table-body>tr>td>button:nth-child(2)").click(function () {
+            let nic = $(this).parents("#customer-table-body>tr").children().eq(0).text();
+            let name = $(this).parents("#customer-table-body>tr").children().eq(1).text();
+            let tel = $(this).parents("#customer-table-body>tr").children().eq(2).text();
+            let address = $(this).parents("#customer-table-body>tr").children().eq(3).text();
+
+            $('#inputUpdateNIC').val(nic);
+            $('#inputUpdateName').val(name);
+            $('#inputUpdateTel').val(tel);
+            $('#inputUpdateAddress').val(address);
+
+            popUpUpdateCustomerForm();
+
+        });
+    }
+
+    function popUpUpdateCustomerForm() {
+        let modalToggle = $('#customer-table-body>tr');
+        let myModal = new bootstrap.Modal($('#updateCustomer'));
+        myModal.show(modalToggle);
     }
 
     function getAllCustomers() {
@@ -297,6 +351,7 @@
                 }
 
                 deleteCustomer();
+                setDetailsForUpdateForm();
 
             }
         });
