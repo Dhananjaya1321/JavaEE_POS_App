@@ -86,43 +86,44 @@
                             aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form class="row g-3 text-start">
+                    <form id="customer-form" class="row g-3 text-start">
                       <div class="col-12">
                         <label for="inputNIC" class="form-label">NIC</label>
-                        <input type="text" class="form-control" id="inputNIC" placeholder="NIC">
+                        <input type="text" name="nic" class="form-control" id="inputNIC" placeholder="NIC">
                         <p id="inputNICAlert" class="m-0"
                            style="font-size: 10px; color: red"></p>
                       </div>
                       <div class="col-12">
                         <label for="inputName" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="inputName"
+                        <input type="text" name="name" class="form-control" id="inputName"
                                placeholder="Name">
                         <p id="inputNameAlert" class="m-0"
                            style="font-size: 10px; color: red"></p>
                       </div>
                       <div class="col-12">
                         <label for="inputTel" class="form-label">Tel</label>
-                        <input type="text" class="form-control" id="inputTel" placeholder="Tel">
+                        <input type="text" name="tel" class="form-control" id="inputTel" placeholder="Tel">
                         <p id="inputTelAlert" class="m-0"
                            style="font-size: 10px; color: red"></p>
                       </div>
                       <div class="col-12">
                         <label for="inputAddress" class="form-label">Address</label>
-                        <input type="text" class="form-control" id="inputAddress"
+                        <input type="text" name="address" class="form-control" id="inputAddress"
                                placeholder="Address">
                         <p id="inputAddressAlert" class="m-0"
                            style="font-size: 10px; color: red"></p>
                       </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close
+                        </button>
+                        <button id="addNewCustomerClearButton" type="button" class="btn btn-warning">
+                          Clear
+                        </button>
+                        <button type="button" class="btn btn-primary" id="save-customer">Save</button>
+                      </div>
                     </form><!--customer form-->
                   </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close
-                    </button>
-                    <button id="addNewCustomerClearButton" type="button" class="btn btn-warning">
-                      Clear
-                    </button>
-                    <button type="button" class="btn btn-primary" id="save-customer">Save</button>
-                  </div>
+
                 </div>
               </div>
             </div><!--modal-->
@@ -222,5 +223,23 @@
 
 <script src="../assets/bootstrap/js/bootstrap.js"></script>
 <script src="../assets/js/jquery-3.7.0.min.js"></script>
+<script>
+  $("#save-customer").click(function () {
+    let dataForm=$("#customer-form").serialize();
+    console.log(data);
+    $.ajax({
+      url:"http://localhost:8080/pos_app/pages/customer",
+      method:"post",
+      data:dataForm,
+      success:function (rep) {
+        alert(rep.message);
+      },
+      error:function (error) {
+        alert(rep.responseJSON.message);
+
+      }
+    })
+  });
+</script>
 </body>
 </html>
