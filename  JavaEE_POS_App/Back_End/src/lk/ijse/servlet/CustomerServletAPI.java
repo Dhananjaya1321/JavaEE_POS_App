@@ -37,13 +37,11 @@ public class CustomerServletAPI extends HttpServlet {
                                 .add("address", resultSet.getString(4))
                 );
             }
-        resp.getWriter().print(arrayBuilder.build());
+            resp.getWriter().print(arrayBuilder.build());
 
         } catch (SQLException e) {
 
         }
-
-
     }
 
     @Override
@@ -92,11 +90,29 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Content-Type", "application/json");
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE nic=? ");
+            preparedStatement.setObject(1, req.getParameter("nic"));
+            if (preparedStatement.executeUpdate() > 0) {
+                resp.getWriter().print(
+                        Json.createObjectBuilder()
+                                .add("state", "Ok")
+                                .add("message", "Successfully Deleted...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }
+        } catch (SQLException e) {
 
+        }
     }
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        resp.addHeader("Access-Control-Allow-Origin","*");
+        resp.addHeader("Access-Control-Allow-Methods","DELETE");
+        resp.addHeader("Access-Control-Allow-Headers","Content-Type");
     }
 }
