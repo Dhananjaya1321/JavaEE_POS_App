@@ -3,6 +3,7 @@ package lk.ijse.servlet;
 import lk.ijse.db.DBConnection;
 
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,15 +13,36 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/customer")
 public class CustomerServletAPI extends HttpServlet {
     Connection connection = DBConnection.getDbConnection().getConnection();
-    JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Content-Type", "application/json");
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM customer");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+            while (resultSet.next()) {
+                arrayBuilder.add(
+                        Json.createObjectBuilder()
+                                .add("nic", resultSet.getString(1))
+                                .add("name", resultSet.getString(2))
+                                .add("tel", resultSet.getString(3))
+                                .add("address", resultSet.getString(4))
+                );
+            }
+        resp.getWriter().print(arrayBuilder.build());
+
+        } catch (SQLException e) {
+
+        }
+
 
     }
 
@@ -32,7 +54,8 @@ public class CustomerServletAPI extends HttpServlet {
         String name = req.getParameter("name");
         String tel = req.getParameter("tel");
         String address = req.getParameter("address");
-        System.out.println(nic+name+address+tel);
+        System.out.println(nic + name + address + tel);
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO customer VALUES (?,?,?,?)");
             preparedStatement.setObject(1, nic);
@@ -58,7 +81,8 @@ public class CustomerServletAPI extends HttpServlet {
                             .add("message", e.getMessage())
                             .add("data", "[]")
                             .build()
-            );        }
+            );
+        }
     }
 
     @Override
