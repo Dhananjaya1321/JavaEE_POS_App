@@ -80,3 +80,29 @@ function searchCustomer(nic) {
         return customer.nic === nic;
     });//return to matched customer object
 }
+
+/*item*/
+$("#item-itemCode").click(function () {
+    let code = $("#item-itemCode").val();
+    if (code !== "Select Code") {
+        let item = searchItem(code);
+        $("#itemName").val(item.name);
+        $("#itemPrice").val(item.price);
+        $("#itemQTY").val(item.qty);
+
+        $("#item-itemCode").css("border", 'solid green 2px');
+        $("#itemName").css("border", 'solid green 2px');
+        $("#itemPrice").css("border", 'solid green 2px');
+        $("#itemQTY").css("border", 'solid green 2px');
+    } else {
+        $("#itemName").val("");
+        $("#itemPrice").val("");
+        $("#itemQTY").val("");
+    }
+});
+
+function searchItem(code) {
+    return items.find(function (item) {
+        return item.code === code;
+    });
+}
