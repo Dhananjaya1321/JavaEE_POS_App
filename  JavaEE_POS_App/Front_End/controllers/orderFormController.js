@@ -127,3 +127,99 @@ $("#Quantity").keyup(function () {
         $("#Quantity").css("border", 'solid red 2px');
     }
 });//this event use check to input value for quantity
+
+let cartItems=[];
+$("#addToCart").click(function () {
+    $("#QuantityAlert").text("")
+    let nic = $("#invoice-customerNIC").val();
+    let code = $("#item-itemCode").val();
+    if (nic !== "Select NIC" && code !== "Select Code") {
+        let orderId = $("#orderId").val();
+        let itemCode = $("#item-itemCode").val();
+        let itemName = $("#itemName").val();
+        let itemPrice = $("#itemPrice").val();
+        let itemQty = $("#Quantity").val();
+        if (itemQty <= $("#itemQTY").val() && itemQty !== "") {
+            if (!checkOrderAndItem(itemQty)) {
+                let newOrder = {
+                    "orderId" : orderId,
+                    "itemCode" : itemCode,
+                    "itemName" : itemName,
+                    "itemPrice" : itemPrice,
+                    "itemQty" : itemQty
+                }
+                cartItems.push(newOrder);
+            }
+            addToCart();
+        } else {
+            if (itemQty === "") {
+                $("#QuantityAlert").text(`Input item quantity`);
+                $("#Quantity").css("border", "red solid 2px");
+            } else {
+                $("#QuantityAlert").text(`${itemQty} of these are not available. The amount in hand is less than ${itemQty} `);
+            }
+        }
+    } else {
+        if (nic === "Select NIC" && code === "Select Code") {
+            $("#invoice-customerNIC").css("border", 'solid red 2px');
+            $("#customerName").css("border", 'solid red 2px');
+            $("#customerTel").css("border", 'solid red 2px');
+            $("#customerAddress").css("border", 'solid red 2px');
+
+            $("#item-itemCode").css("border", 'solid red 2px');
+            $("#itemName").css("border", 'solid red 2px');
+            $("#itemPrice").css("border", 'solid red 2px');
+            $("#itemQTY").css("border", 'solid red 2px');
+        } else if (code === "Select Code") {
+            $("#invoice-customerNIC").css("border", 'solid green 2px');
+            $("#customerName").css("border", 'solid green 2px');
+            $("#customerTel").css("border", 'solid green 2px');
+            $("#customerAddress").css("border", 'solid green 2px');
+
+            $("#item-itemCode").css("border", 'solid red 2px');
+            $("#itemName").css("border", 'solid red 2px');
+            $("#itemPrice").css("border", 'solid red 2px');
+            $("#itemQTY").css("border", 'solid red 2px');
+        } else {
+            $("#invoice-customerNIC").css("border", 'solid red 2px');
+            $("#customerName").css("border", 'solid red 2px');
+            $("#customerTel").css("border", 'solid red 2px');
+            $("#customerAddress").css("border", 'solid red 2px');
+
+            $("#item-itemCode").css("border", 'solid green 2px');
+            $("#itemName").css("border", 'solid green 2px');
+            $("#itemPrice").css("border", 'solid green 2px');
+            $("#itemQTY").css("border", 'solid green 2px');
+        }
+    }
+});
+
+function checkOrderAndItem(itemQty) {
+    for (let j = 0; j < cartItems.length; j++) {
+        if (cartItems[j].orderId === $("#orderId").val() && cartItems[j].itemCode === $("#item-itemCode").val()) {
+            cartItems[j].itemQty = Number(cartItems[j].itemQty) + Number(itemQty);
+            return true;
+        }
+    }
+    return false;
+}
+
+function addToCart() {
+    let tableBody = $("#order-table");
+    tableBody.empty();
+    for (let i = 0; i < cartItems.length; i++) {
+        if (cartItems[i].orderId === $("#orderId").val()) {
+            let tr = `<tr>
+                        <td>${cartItems[i].itemCode}</td>
+                        <td>${cartItems[i].itemName}</td>
+                        <td>${cartItems[i].itemPrice}</td>
+                        <td>${cartItems[i].itemQty}</td>
+                        <td>
+                          <button type="button" class="btn btn-danger border-0" style="background-color: #ff0014"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                      </tr>`;
+            tableBody.append(tr);
+        }
+    }
+}
+
