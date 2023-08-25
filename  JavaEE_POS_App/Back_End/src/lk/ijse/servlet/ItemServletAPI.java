@@ -2,9 +2,7 @@ package lk.ijse.servlet;
 
 import lk.ijse.db.DBConnection;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -46,11 +44,11 @@ public class ItemServletAPI extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
-        String code=req.getParameter("code");
-        String name=req.getParameter("name");
-        double price= Double.parseDouble(req.getParameter("price"));
-        int qty= Integer.parseInt(req.getParameter("qty"));
-        System.out.println(code+" "+name+" "+price+" "+qty);
+        String code = req.getParameter("code");
+        String name = req.getParameter("name");
+        double price = Double.parseDouble(req.getParameter("price"));
+        int qty = Integer.parseInt(req.getParameter("qty"));
+
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO item VALUES (?,?,?,?)");
             preparedStatement.setObject(1, code);
@@ -73,7 +71,34 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Content-Type", "application/json");
 
+        JsonReader reader = Json.createReader(req.getReader());
+        JsonObject jsonObject = reader.readObject();
+        String code = jsonObject.getString("code");
+        String name = jsonObject.getString("name");
+        double price = Double.parseDouble(jsonObject.getString("price"));
+        int qty = Integer.parseInt(jsonObject.getString("qty"));
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE item SET name=?,price=?,qty=? WHERE code=?");
+            preparedStatement.setObject(1, name);
+            preparedStatement.setObject(2, price);
+            preparedStatement.setObject(3, qty);
+            preparedStatement.setObject(4, code);
+            if (preparedStatement.executeUpdate() > 0){
+                resp.getWriter().print(
+                        Json.createObjectBuilder()
+                                .add("state", "Ok")
+                                .add("message", "Successfully Updated...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }
+        } catch (SQLException e) {
+
+        }
     }
 
     @Override
@@ -83,6 +108,8 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
+        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 }

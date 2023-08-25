@@ -112,16 +112,18 @@
                                                 <p id="inputItemQTYAlert" class="m-0"
                                                    style="font-size: 10px; color: red"></p>
                                             </div>
-                                        </form>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                                    Close
+                                                </button>
+                                                <button id="addNewItemClearButton" type="button"
+                                                        class="btn btn-warning">Clear
+                                                </button>
+                                                <button id="save-item" type="button" class="btn btn-primary">Save
+                                                </button>
+                                            </div>
+                                        </form><!--Item form-->
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close
-                                        </button>
-                                        <button id="addNewItemClearButton" type="button" class="btn btn-warning">Clear
-                                        </button>
-                                        <button id="save-item" type="button" class="btn btn-primary">Save</button>
-                                    </div>
-                                    </form><!--Item form-->
                                 </div>
                             </div>
                         </div><!--modal-->
@@ -255,11 +257,14 @@
                         </tr>`
                     $("#item-table-body").append(row);
                 }
+
+                setDetailsForItemsUpdateForm();
+
             },
             error: function (error) {
 
             }
-        })
+        });
     }
 
     $("#save-item").click(function () {
@@ -278,6 +283,56 @@
             }
         });
     });
+
+    $("#itemUpdateButton").click(function () {
+        let code = $('#inputUpdateItemCode').val();
+        let name = $('#inputUpdateItemName').val();
+        let price = $('#inputUpdateItemPrice').val();
+        let qty = $('#inputUpdateItemQuantity').val();
+        let item = {
+            "code": code,
+            "name": name,
+            "price": price,
+            "qty": qty
+        }
+        if (confirm("Do you want to Update.?")) {
+            $.ajax({
+                url: "http://localhost:8080/pos_app/pages/item",
+                method:"put",
+                contentType: "application/json",
+                data: JSON.stringify(item),
+                success:function (resp) {
+                    getAllItems();
+                    alert(resp.message);
+                },
+                error:function (error){
+
+                }
+            });
+        }
+    });
+
+    function setDetailsForItemsUpdateForm() {
+        $("#item-table-body>tr>td>button:nth-child(2)").click(function () {
+            let code = $(this).parents("#item-table-body>tr").children().eq(0).text();
+            let name = $(this).parents("#item-table-body>tr").children().eq(1).text();
+            let price = $(this).parents("#item-table-body>tr").children().eq(2).text();
+            let qty = $(this).parents("#item-table-body>tr").children().eq(3).text();
+
+            $('#inputUpdateItemCode').val(code);
+            $('#inputUpdateItemName').val(name);
+            $('#inputUpdateItemPrice').val(price);
+            $('#inputUpdateItemQuantity').val(qty);
+
+            popUpUpdateItemForm();
+        });
+    }
+
+    function popUpUpdateItemForm() {
+        let modalToggle = $('#item-table-body>tr');
+        let myModal = new bootstrap.Modal($('#updateItem'));
+        myModal.show(modalToggle);
+    }
 
 </script>
 </body>
