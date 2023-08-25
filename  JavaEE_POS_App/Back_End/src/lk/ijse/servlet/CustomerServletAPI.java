@@ -118,7 +118,7 @@ public class CustomerServletAPI extends HttpServlet {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE nic=? ");
+            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE nic=?");
             preparedStatement.setObject(1, req.getParameter("nic"));
             if (preparedStatement.executeUpdate() > 0) {
                 resp.getWriter().print(

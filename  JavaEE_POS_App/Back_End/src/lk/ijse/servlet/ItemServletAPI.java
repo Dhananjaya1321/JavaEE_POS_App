@@ -103,7 +103,24 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Content-Type", "application/json");
+        String code=req.getParameter("code");
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM item WHERE code=? ");
+            preparedStatement.setObject(1, code);
+            if (preparedStatement.executeUpdate() > 0){
+                resp.getWriter().print(
+                        Json.createObjectBuilder()
+                                .add("state", "Ok")
+                                .add("message", "Successfully Deleted...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }
+        } catch (SQLException e) {
 
+        }
     }
 
     @Override

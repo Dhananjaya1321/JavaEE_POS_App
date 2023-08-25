@@ -259,6 +259,7 @@
                 }
 
                 setDetailsForItemsUpdateForm();
+                deleteItem();
 
             },
             error: function (error) {
@@ -298,14 +299,14 @@
         if (confirm("Do you want to Update.?")) {
             $.ajax({
                 url: "http://localhost:8080/pos_app/pages/item",
-                method:"put",
+                method: "put",
                 contentType: "application/json",
                 data: JSON.stringify(item),
-                success:function (resp) {
+                success: function (resp) {
                     getAllItems();
                     alert(resp.message);
                 },
-                error:function (error){
+                error: function (error) {
 
                 }
             });
@@ -332,6 +333,25 @@
         let modalToggle = $('#item-table-body>tr');
         let myModal = new bootstrap.Modal($('#updateItem'));
         myModal.show(modalToggle);
+    }
+
+    function deleteItem() {
+        $("#item-table-body>tr>td>button:nth-child(1)").click(function () {
+            if (confirm("Do you want to delete.!")) {
+                let code = $(this).parents("#item-table-body>tr").children().eq(0).text();
+                $.ajax({
+                    url: "http://localhost:8080/pos_app/pages/item?code=" + code,
+                    method: "delete",
+                    success: function (resp) {
+                        getAllItems();
+                        alert(resp.message);
+                    },
+                    error: function (error) {
+
+                    }
+                });
+            }
+        });
     }
 
 </script>
