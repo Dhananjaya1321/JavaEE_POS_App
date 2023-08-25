@@ -1,10 +1,30 @@
 $(window).ready(function () {
     loadAllItemsForComboBox();
     getAllCustomersForComboBox();
+    getOrderCount();
 })
 
 let customers;
 let items;
+
+function setOrderId(orderCount) {
+    $("#orderDate").val(new Date().toISOString().slice(0, 10));
+    if (orderCount > 0) {
+        $("#orderId").val("O00-00" + (orderCount + 1));
+    } else {
+        $("#orderId").val("O00-001");
+    }
+}
+
+function getOrderCount() {
+    $.ajax({
+        url: "http://localhost:8080/pos_app/pages/order",
+        method: "get",
+        success: function (resp) {
+            setOrderId(resp.ordersCount);
+        }
+    });
+}
 
 function loadAllItemsForComboBox() {
     $.ajax({
@@ -16,7 +36,7 @@ function loadAllItemsForComboBox() {
                 `<option>Select Code</option>`
             );
 
-            items=resp;
+            items = resp;
 
             for (let i in resp) {
                 let item = resp[i];
@@ -42,7 +62,7 @@ function getAllCustomersForComboBox() {
                 `<option>Select NIC</option>`
             );
 
-            customers=resp;
+            customers = resp;
 
             for (let i in resp) {
                 let customer = resp[i];
