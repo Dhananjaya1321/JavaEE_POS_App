@@ -69,7 +69,7 @@
                     <div class="col-sm-12 col-md-4">
                         <nav class="navbar justify-content-center">
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#newItem">Add
+                                    id="addNewItem" data-bs-target="#newItem">Add
                             </button>
                         </nav><!--button-->
                         <div class="modal fade" id="newItem" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -82,7 +82,7 @@
                                                 aria-label="Close"></button>
                                     </div><!--title-->
                                     <div class="modal-body">
-                                        <form class="row g-3 text-start">
+                                        <form id="item-form" class="row g-3 text-start">
                                             <div class="col-12">
                                                 <label for="inputItemCode" class="form-label">Item Code</label>
                                                 <input name="code" type="text" class="form-control" id="inputItemCode"
@@ -112,6 +112,7 @@
                                                 <p id="inputItemQTYAlert" class="m-0"
                                                    style="font-size: 10px; color: red"></p>
                                             </div>
+                                        </form>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close
@@ -234,6 +235,7 @@
             url: "http://localhost:8080/pos_app/pages/item",
             method: "get",
             success: function (resp) {
+                $("#item-table-body").empty();
                 for (let i in resp) {
                     let item = resp[i];
                     let code = item.code;
@@ -259,6 +261,23 @@
             }
         })
     }
+
+    $("#save-item").click(function () {
+        let formData = $("#item-form").serialize();
+        console.log(formData);
+        $.ajax({
+            url: "http://localhost:8080/pos_app/pages/item",
+            method: "post",
+            data: formData,
+            success: function (resp) {
+                getAllItems();
+                alert(resp.message);
+            },
+            error: function (error) {
+
+            }
+        });
+    });
 
 </script>
 </body>

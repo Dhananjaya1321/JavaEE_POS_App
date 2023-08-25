@@ -22,18 +22,18 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin","*");
-        resp.addHeader("Content-Type","application/json");
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Content-Type", "application/json");
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM item");
             ResultSet resultSet = preparedStatement.executeQuery();
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                objectBuilder.add("code",resultSet.getString(1));
-                objectBuilder.add("name",resultSet.getString(2));
-                objectBuilder.add("price",resultSet.getString(3));
-                objectBuilder.add("qty",resultSet.getString(4));
+                objectBuilder.add("code", resultSet.getString(1));
+                objectBuilder.add("name", resultSet.getString(2));
+                objectBuilder.add("price", resultSet.getString(3));
+                objectBuilder.add("qty", resultSet.getString(4));
                 arrayBuilder.add(objectBuilder.build());
             }
             resp.getWriter().print(arrayBuilder.build());
@@ -44,7 +44,31 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Content-Type", "application/json");
+        String code=req.getParameter("code");
+        String name=req.getParameter("name");
+        double price= Double.parseDouble(req.getParameter("price"));
+        int qty= Integer.parseInt(req.getParameter("qty"));
+        System.out.println(code+" "+name+" "+price+" "+qty);
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO item VALUES (?,?,?,?)");
+            preparedStatement.setObject(1, code);
+            preparedStatement.setObject(2, name);
+            preparedStatement.setObject(3, price);
+            preparedStatement.setObject(4, qty);
+            if (preparedStatement.executeUpdate() > 0) {
+                resp.getWriter().print(
+                        Json.createObjectBuilder()
+                                .add("state", "Ok")
+                                .add("message", "Successfully Added...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }
+        } catch (SQLException e) {
 
+        }
     }
 
     @Override
