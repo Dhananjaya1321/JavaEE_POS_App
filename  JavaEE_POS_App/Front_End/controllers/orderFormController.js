@@ -151,6 +151,7 @@ $("#addToCart").click(function () {
                 cartItems.push(newOrder);
             }
             addToCart();
+            updateItemQTY(itemCode, itemQty);
         } else {
             if (itemQty === "") {
                 $("#QuantityAlert").text(`Input item quantity`);
@@ -223,3 +224,21 @@ function addToCart() {
     }
 }
 
+function updateItemQTY(itemCode, itemQty) {
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].code === itemCode) {
+            items[i].qty = Number(items[i].qty) - Number(itemQty);
+            searchItem(itemCode).qty = items[i].qty;
+        }
+    }
+    searchItem()
+    clearItemSection();
+}
+
+function clearItemSection() {
+    $("#item-itemCode").val("Select Code");
+    $("#itemName").val("");
+    $("#itemPrice").val("");
+    $("#itemQTY").val("");
+    $("#Quantity").val("");
+}
