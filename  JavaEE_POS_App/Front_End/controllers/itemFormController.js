@@ -123,3 +123,9 @@ function deleteItem() {
         }
     });
 }
+
+function searchItem(code) {
+    return items.find(function (item) {
+        return item.code === code;
+    });
+}//this function use to search item and return matched item object

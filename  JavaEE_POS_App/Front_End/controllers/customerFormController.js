@@ -122,3 +122,9 @@ function getAllCustomers() {
         }
     });
 }
+
+function searchCustomer(nic) {
+    return customers.find(function (customer) {
+        return customer.nic === nic;
+    });//return to matched customer object
+}//this function use to search customer and return matched customer object

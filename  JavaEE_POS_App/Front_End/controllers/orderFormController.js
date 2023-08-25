@@ -14,7 +14,7 @@ function setOrderId(orderCount) {
     } else {
         $("#orderId").val("O00-001");
     }
-}
+}//this function use to set a next order id
 
 function getOrderCount() {
     $.ajax({
@@ -24,7 +24,7 @@ function getOrderCount() {
             setOrderId(resp.ordersCount);
         }
     });
-}
+}//this function use to get an order count from database
 
 function loadAllItemsForComboBox() {
     $.ajax({
@@ -95,12 +95,6 @@ $("#invoice-customerNIC").click(function () {
     }
 });
 
-function searchCustomer(nic) {
-    return customers.find(function (customer) {
-        return customer.nic === nic;
-    });//return to matched customer object
-}
-
 /*item*/
 $("#item-itemCode").click(function () {
     let code = $("#item-itemCode").val();
@@ -121,8 +115,15 @@ $("#item-itemCode").click(function () {
     }
 });
 
-function searchItem(code) {
-    return items.find(function (item) {
-        return item.code === code;
-    });
-}
+$("#Quantity").keyup(function () {
+    let qty = $("#Quantity").val();
+    if (Number($("#Quantity").val()) !== 0 && $("#Quantity").val() !== "") {
+        if (Number(qty) <= Number($("#itemQTY").val())) {
+            $("#Quantity").css("border", 'solid green 2px');
+        } else {
+            $("#Quantity").css("border", 'solid red 2px');
+        }
+    } else {
+        $("#Quantity").css("border", 'solid red 2px');
+    }
+});//this event use check to input value for quantity
