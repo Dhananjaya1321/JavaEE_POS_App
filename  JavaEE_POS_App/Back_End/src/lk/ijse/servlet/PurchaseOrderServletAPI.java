@@ -2,9 +2,7 @@ package lk.ijse.servlet;
 
 import lk.ijse.db.DBConnection;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -24,14 +22,32 @@ public class PurchaseOrderServletAPI extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
+        String option = req.getParameter("option");
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(orderID) as orderCount FROM orders");
-            ResultSet resultSet = preparedStatement.executeQuery();
-            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-            if (resultSet.next()) {
-                objectBuilder.add("ordersCount", resultSet.getString(1));
+            switch (option) {
+                case "orders":
+                    PreparedStatement preparedStatement1 = connection.prepareStatement("SELECT orderID FROM orders");
+                    ResultSet resultSet1 = preparedStatement1.executeQuery();
+                    JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                    while (resultSet1.next()) {
+                        arrayBuilder.add(
+                                Json.createObjectBuilder()
+                                        .add("orderID", resultSet1.getString(1))
+                        );
+                    }
+                    resp.getWriter().print(arrayBuilder.build());
+                    break;
+                case "orderCount":
+                    PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(orderID) as orderCount FROM orders");
+                    ResultSet resultSet = preparedStatement.executeQuery();
+                    JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                    if (resultSet.next()) {
+                        objectBuilder.add("ordersCount", resultSet.getString(1));
+                    }
+                    resp.getWriter().print(objectBuilder.build());
+                    break;
             }
-            resp.getWriter().print(objectBuilder.build());
+
 
         } catch (SQLException e) {
 
@@ -55,6 +71,8 @@ public class PurchaseOrderServletAPI extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
+        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 }

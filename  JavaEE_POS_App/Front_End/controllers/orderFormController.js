@@ -6,6 +6,8 @@ $(window).ready(function () {
 
 let customers;
 let items;
+let cartItems = [];
+let orders=[];
 
 function setOrderId(orderCount) {
     $("#orderDate").val(new Date().toISOString().slice(0, 10));
@@ -18,13 +20,24 @@ function setOrderId(orderCount) {
 
 function getOrderCount() {
     $.ajax({
-        url: "http://localhost:8080/pos_app/pages/order",
+        url: "http://localhost:8080/pos_app/pages/order?option=orderCount",
         method: "get",
         success: function (resp) {
             setOrderId(resp.ordersCount);
         }
     });
 }//this function use to get an order count from database
+
+function getOrders() {
+    $.ajax({
+        url: "http://localhost:8080/pos_app/pages/order?option=orders",
+        method: "get",
+        success: function (resp) {
+            orders=resp;
+            console.log(orders);
+        }
+    });
+}
 
 function loadAllItemsForComboBox() {
     $.ajax({
@@ -128,7 +141,7 @@ $("#Quantity").keyup(function () {
     }
 });//this event use check to input value for quantity
 
-let cartItems=[];
+
 $("#addToCart").click(function () {
     $("#QuantityAlert").text("")
     let nic = $("#invoice-customerNIC").val();
@@ -142,11 +155,11 @@ $("#addToCart").click(function () {
         if (itemQty <= $("#itemQTY").val() && itemQty !== "") {
             if (!checkOrderAndItem(itemQty)) {
                 let newOrder = {
-                    "orderId" : orderId,
-                    "itemCode" : itemCode,
-                    "itemName" : itemName,
-                    "itemPrice" : itemPrice,
-                    "itemQty" : itemQty
+                    "orderId": orderId,
+                    "itemCode": itemCode,
+                    "itemName": itemName,
+                    "itemPrice": itemPrice,
+                    "itemQty": itemQty
                 }
                 cartItems.push(newOrder);
             }
@@ -222,6 +235,51 @@ function addToCart() {
             tableBody.append(tr);
         }
     }
+    getDeleteCartItem();
+    calculateTotal();
+}
+
+function calculateTotal() {
+    let price = 0, qty = 0, tot = 0;
+    const table = $("#order-table")[0];
+    for (let i = 0; i < $("#order-table > tr").length; i++) {
+        price = Number(table.rows[i].cells[2].textContent);
+        qty = Number(table.rows[i].cells[3].textContent);
+        tot = tot + (price * qty);
+    }
+    $("#total").text(tot);
+    $("#subTotal").text(tot);
+}
+
+function getDeleteCartItem() {
+    $("#order-table>tr>td>button:nth-child(1)").click(function () {
+        let code = $(this).parents("#order-table>tr").children().eq(0).text();
+        let qty = $(this).parents("#order-table>tr").children().eq(3).text();
+        let oid = $("#orderId").val();
+        let consent = confirm("Do you want to delete.?");
+        if (consent) {
+            let response = deleteCartItem(oid, code, qty);
+            if (response) {
+                alert("Item Deleted");
+                $("#order-table").empty();
+                addToCart();
+            } else {
+                alert("Item Not Removed..!");
+            }
+        }
+    });
+}
+
+function deleteCartItem(oid, code, newQTY) {
+    for (let i = 0; i < cartItems.length; i++) {
+        if (cartItems[i].orderId === oid && cartItems[i].itemCode === code) {
+            let item = searchItem(code);
+            item.qty = Number(item.qty) + Number(newQTY);
+            cartItems.splice(i, 1);
+            return true;
+        }
+    }
+    return false;
 }
 
 function updateItemQTY(itemCode, itemQty) {
@@ -241,4 +299,97 @@ function clearItemSection() {
     $("#itemPrice").val("");
     $("#itemQTY").val("");
     $("#Quantity").val("");
+}
+
+function clearInvoiceSection() {
+    $("#invoice-customerNIC").val("Select NIC");
+    $("#customerName").val("");
+    $("#customerTel").val("");
+    $("#customerAddress").val("");
+}
+
+$("#discount,#cash").keydown(function (event) {
+    if (event.key === "Enter") {
+        $("#cashAlert").text("");
+        $("#discountAlert").text("");
+
+        let cash = $("#cash").val();
+        let discount = $("#discount").val();
+        if (discount >= 0 && discount < 100) {
+            $("#discount").css("border", "green solid 2px");
+            setBalance(cash, discount);
+        } else {
+            $("#discount").css("border", "red solid 2px");
+            $("#discount").focus();
+            $("#discountAlert").text("Negative discounts cannot be added");
+        }
+        if (cash < $("#total").val() && cash === "") {
+            $("#cashAlert").text("This amount is not enough");
+        }
+    }
+});
+
+function setBalance(cash, discount) {
+    let tot = ($("#total").text() - ($("#total").text() * (discount / 100)));
+    $("#subTotal").text(tot);
+    let balance = cash - tot;
+    if (balance >= 0) {
+        $("#balance").val(balance);
+        $("#balance").css("border", "solid 2px green");
+    } else {
+        $("#balance").css("border", "solid 2px red");
+    }
+}
+
+$("#place-order").click(function () {
+    $("#orderIdAlert").text("");
+    $("#cashAlert").text("");
+    let total = $("#total").text();
+    let subTotal = $("#subTotal").text();
+    let cash = $("#cash").val();
+    let orderID = $("#orderId").val();
+
+    $.ajax({
+        url: "http://localhost:8080/pos_app/pages/order?option=orders",
+        method: "get",
+        success: function (resp) {
+            orders=resp;
+            if (undefined === searchOrder(orderID)) {
+                if ($("#order-table>tr").length > 0 && $("#invoice-customerNIC").val() !== "Select NIC") {
+                    if (Number(cash) >= Number(total) && cash !== "") {
+                        let date = $("#orderDate").val();
+                        let nic = $("#invoice-customerNIC").val();
+                        let discount = $("#discount").val();
+                        let balance = $("#balance").val();
+                        let newOrderDetails = {
+                            /*order table and order details table*/
+                            "orderId": orderID,
+                            "date": date,
+                            "nic": nic,
+                            "total": total,
+                            "subTotal": subTotal,
+                            "cash": cash,
+                            "discount": discount,
+                            "balance": balance,
+                            /*order details table and update item qty*/
+                            "cartItems": cartItems
+                        }
+                    } else {
+                        $("#cashAlert").text("This amount is not enough");
+                    }
+                } else {
+                    $("#invoice-customerNIC").focus();
+                }
+            } else {
+                $("#orderIdAlert").text(`${orderID} already exits`);
+            }        }
+    });
+
+
+});
+
+function searchOrder(orderID) {
+    return orders.find(function (orders) {
+        return orders.orderId === orderID;
+    });
 }
