@@ -65,8 +65,6 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                         String balance = order.getString(7);
                         String discount = order.getString(8);
 
-                        System.out.println(date + discount);
-
                         array.add(Json.createObjectBuilder()
                                 .add("date", date)
                                 .add("nic", nic)
@@ -87,35 +85,26 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                             String price = orderDetails.getString(3);
                             String qty = orderDetails.getString(4);
 
-                            System.out.println(code + qty);
-
                             PreparedStatement getItemStatement = connection.prepareStatement("SELECT name FROM item WHERE code=?");
                             getItemStatement.setObject(1, code);
 
-                            System.out.println("ok1");
-
                             ResultSet itemDetails = getItemStatement.executeQuery();
-
-                            System.out.println("ok2");
 
                             String itemName=null;
                             if (itemDetails.next()) {
-                                System.out.println("ok3");
                                 itemName = itemDetails.getString(1);
-                                System.out.println("ok4");
                             }
-
-                            System.out.println(itemName);
 
                             orderDetailsArray.add(
                                     Json.createObjectBuilder()
-                                            .add("code", code)
-                                            .add("name", itemName)
-                                            .add("price", price)
-                                            .add("qty", qty)
+                                            .add("itemCode", code)
+                                            .add("itemName", itemName)
+                                            .add("itemPrice", price)
+                                            .add("itemQty", qty)
                                             .build()
                             );
                         }
+                        array.add(orderDetailsArray.build());
 
                         PreparedStatement getCustomerDetailsStatement = connection.prepareStatement("SELECT * FROM customer WHERE nic=?");
                         getCustomerDetailsStatement.setObject(1, nic);
@@ -129,7 +118,8 @@ public class PurchaseOrderServletAPI extends HttpServlet {
 
                             array.add(
                                     Json.createObjectBuilder()
-                                            .add("cusName", cusName)
+                                            .add("nic", nic)
+                                            .add("name", cusName)
                                             .add("tel", tel)
                                             .add("address", address)
                                             .build()

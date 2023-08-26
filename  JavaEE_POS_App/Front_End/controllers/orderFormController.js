@@ -412,51 +412,70 @@ $("#place-order").click(function () {
     });
 });
 
+function loadToCart() {
+    let tableBody = $("#order-table");
+    tableBody.empty();
+    for (let i = 0; i < cartItems.length; i++) {
+        let tr = `<tr>
+                     <td>${cartItems[i].itemCode}</td>
+                     <td>${cartItems[i].itemName}</td>
+                     <td>${cartItems[i].itemPrice}</td>
+                     <td>${cartItems[i].itemQty}</td>
+                     <td>
+                       <button type="button" class="btn btn-danger border-0" style="background-color: #ff0014"><i class="fa-solid fa-trash-can"></i></button>
+                     </td>
+                   </tr>`;
+        tableBody.append(tr);
+
+    }
+    getDeleteCartItem();
+    // calculateTotal();
+}
+
 $("#orderId").keydown(function (event) {
     $("#orderIdAlert").text("");
     if (event.key === "Enter") {
         let orderID = $("#orderId").val();
-        let searchOrder1 = searchOrder(orderID);
 
         $.ajax({
-            url: "http://localhost:8080/pos_app/pages/order?option=orderDetails&orderID="+orderID,
+            url: "http://localhost:8080/pos_app/pages/order?option=orderDetails&orderID=" + orderID,
             method: "get",
-            success: function (resp) {
-                orders = resp;
+            success: function (array) {
+                if (array.length > 0) {
+                    cartItems = array[1];
+                    loadToCart();
+                    cartItems=[];
 
+                    let customer = array[2];
+                    $("#invoice-customerNIC").val(customer.nic);
+                    $("#customerName").val(customer.name);
+                    $("#customerTel").val(customer.tel);
+                    $("#customerAddress").val(customer.address);
+
+                    let orderDetails = array[0];
+                    $("#orderDate").text(orderDetails.date);
+                    $("#total").text(orderDetails.total);
+                    $("#subTotal").text(orderDetails.subTotal);
+                    $("#cash").val(orderDetails.cash);
+                    $("#discount").val(orderDetails.discount);
+                    $("#balance").val(orderDetails.balance);
+
+                } else {
+                    $("#orderId").focus();
+                    $("#orderIdAlert").text(`${orderID} has no order`);
+
+                    clearItemSection();
+                    clearInvoiceSection();
+                    $("#order-table").empty();
+                    setOrderId();
+                    $("#total").text("0.0");
+                    $("#subTotal").text("0.0");
+                    $("#cash").val("");
+                    $("#discount").val(0);
+                    $("#balance").val("");
+                }
             }
         });
-
-        if (searchOrder1 !== undefined) {
-            addToCart();
-            let customer = searchCustomer(searchOrder1.nic);
-            $("#invoice-customerNIC").val(searchOrder1.nic);
-            $("#customerName").val(customer.name);
-            $("#customerTel").val(customer.tel);
-            $("#customerAddress").val(customer.address);
-
-            $("#orderDate").text(searchOrder1.date);
-            $("#total").text(searchOrder1.total);
-            $("#subTotal").text(searchOrder1.subTotal);
-            $("#cash").val(searchOrder1.cash);
-            $("#discount").val(searchOrder1.discount);
-            $("#balance").val(searchOrder1.balance);
-
-        } else {
-            $("#orderId").focus();
-            $("#orderIdAlert").text(`${orderID} has no order`);
-
-            clearItemSection();
-            clearInvoiceSection();
-            $("#order-table").empty();
-            setOrderId();
-            $("#total").text("0.0");
-            $("#subTotal").text("0.0");
-            $("#cash").val("");
-            $("#discount").val(0);
-            $("#balance").val("");
-        }
-
     }
 });
 
