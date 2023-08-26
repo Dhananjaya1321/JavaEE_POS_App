@@ -412,6 +412,54 @@ $("#place-order").click(function () {
     });
 });
 
+$("#orderId").keydown(function (event) {
+    $("#orderIdAlert").text("");
+    if (event.key === "Enter") {
+        let orderID = $("#orderId").val();
+        let searchOrder1 = searchOrder(orderID);
+
+        $.ajax({
+            url: "http://localhost:8080/pos_app/pages/order?option=orderDetails&orderID="+orderID,
+            method: "get",
+            success: function (resp) {
+                orders = resp;
+
+            }
+        });
+
+        if (searchOrder1 !== undefined) {
+            addToCart();
+            let customer = searchCustomer(searchOrder1.nic);
+            $("#invoice-customerNIC").val(searchOrder1.nic);
+            $("#customerName").val(customer.name);
+            $("#customerTel").val(customer.tel);
+            $("#customerAddress").val(customer.address);
+
+            $("#orderDate").text(searchOrder1.date);
+            $("#total").text(searchOrder1.total);
+            $("#subTotal").text(searchOrder1.subTotal);
+            $("#cash").val(searchOrder1.cash);
+            $("#discount").val(searchOrder1.discount);
+            $("#balance").val(searchOrder1.balance);
+
+        } else {
+            $("#orderId").focus();
+            $("#orderIdAlert").text(`${orderID} has no order`);
+
+            clearItemSection();
+            clearInvoiceSection();
+            $("#order-table").empty();
+            setOrderId();
+            $("#total").text("0.0");
+            $("#subTotal").text("0.0");
+            $("#cash").val("");
+            $("#discount").val(0);
+            $("#balance").val("");
+        }
+
+    }
+});
+
 function searchOrder(orderID) {
     return orders.find(function (orders) {
         return orders.orderId === orderID;

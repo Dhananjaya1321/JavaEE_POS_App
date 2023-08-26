@@ -1,6 +1,7 @@
 package lk.ijse.servlet;
 
 import lk.ijse.db.DBConnection;
+import sun.management.jdp.JdpJmxPacket;
 
 import javax.json.*;
 import javax.servlet.ServletException;
@@ -39,13 +40,105 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                     resp.getWriter().print(arrayBuilder.build());
                     break;
                 case "orderCount":
-                    PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(orderID) as orderCount FROM orders");
-                    ResultSet resultSet = preparedStatement.executeQuery();
+                    PreparedStatement preparedStatement2 = connection.prepareStatement("SELECT COUNT(orderID) as orderCount FROM orders");
+                    ResultSet resultSet = preparedStatement2.executeQuery();
                     JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
                     if (resultSet.next()) {
                         objectBuilder.add("ordersCount", resultSet.getString(1));
                     }
                     resp.getWriter().print(objectBuilder.build());
+                    break;
+                case "orderDetails":
+                    String orderID = req.getParameter("orderID");
+                    PreparedStatement getOrderStatement = connection.prepareStatement("SELECT * FROM orders WHERE orderID=?");
+                    getOrderStatement.setObject(1, orderID);
+                    ResultSet order = getOrderStatement.executeQuery();
+
+                    JsonArrayBuilder array = Json.createArrayBuilder();
+
+                    if (order.next()) {
+                        String date = order.getString(2);
+                        String nic = order.getString(3);
+                        String total = order.getString(4);
+                        String subTotal = order.getString(5);
+                        String cash = order.getString(6);
+                        String balance = order.getString(7);
+                        String discount = order.getString(8);
+
+                        System.out.println(date + discount);
+
+                        array.add(Json.createObjectBuilder()
+                                .add("date", date)
+                                .add("nic", nic)
+                                .add("total", total)
+                                .add("subTotal", subTotal)
+                                .add("cash", cash)
+                                .add("balance", balance)
+                                .add("discount", discount)
+                                .build()
+                        );
+                        PreparedStatement getOrderDetailsStatement = connection.prepareStatement("SELECT * FROM orderDetails WHERE orderID=?");
+                        getOrderDetailsStatement.setObject(1, orderID);
+                        ResultSet orderDetails = getOrderDetailsStatement.executeQuery();
+
+                        JsonArrayBuilder orderDetailsArray = Json.createArrayBuilder();
+                        while (orderDetails.next()) {
+                            String code = orderDetails.getString(2);
+                            String price = orderDetails.getString(3);
+                            String qty = orderDetails.getString(4);
+
+                            System.out.println(code + qty);
+
+                            PreparedStatement getItemStatement = connection.prepareStatement("SELECT name FROM item WHERE code=?");
+                            getItemStatement.setObject(1, code);
+
+                            System.out.println("ok1");
+
+                            ResultSet itemDetails = getItemStatement.executeQuery();
+
+                            System.out.println("ok2");
+
+                            String itemName=null;
+                            if (itemDetails.next()) {
+                                System.out.println("ok3");
+                                itemName = itemDetails.getString(1);
+                                System.out.println("ok4");
+                            }
+
+                            System.out.println(itemName);
+
+                            orderDetailsArray.add(
+                                    Json.createObjectBuilder()
+                                            .add("code", code)
+                                            .add("name", itemName)
+                                            .add("price", price)
+                                            .add("qty", qty)
+                                            .build()
+                            );
+                        }
+
+                        PreparedStatement getCustomerDetailsStatement = connection.prepareStatement("SELECT * FROM customer WHERE nic=?");
+                        getCustomerDetailsStatement.setObject(1, nic);
+                        ResultSet customerDetails = getCustomerDetailsStatement.executeQuery();
+                        if (customerDetails.next()) {
+                            String cusName = customerDetails.getString(2);
+                            String tel = customerDetails.getString(3);
+                            String address = customerDetails.getString(4);
+
+                            System.out.println(cusName + address);
+
+                            array.add(
+                                    Json.createObjectBuilder()
+                                            .add("cusName", cusName)
+                                            .add("tel", tel)
+                                            .add("address", address)
+                                            .build()
+                            );
+                        }
+                    }
+
+                    resp.getWriter().print(array.build());
+
                     break;
             }
         } catch (SQLException e) {
@@ -117,10 +210,10 @@ public class PurchaseOrderServletAPI extends HttpServlet {
 
                             ResultSet resultSet = preparedStatement.executeQuery();
                             System.out.println(resultSet.next());/////////
-                            int oldQTY= Integer.parseInt(resultSet.getString(1));
+                            int oldQTY = Integer.parseInt(resultSet.getString(1));
 
                             PreparedStatement updateItemsStatement = connection.prepareStatement("UPDATE item SET qty=? WHERE code=?");
-                            updateItemsStatement.setObject(1, oldQTY-itemQty);
+                            updateItemsStatement.setObject(1, oldQTY - itemQty);
                             updateItemsStatement.setObject(2, itemCode);
 
                             if (updateItemsStatement.executeUpdate() > 0) {
