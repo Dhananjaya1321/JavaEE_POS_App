@@ -2,12 +2,13 @@ $(window).ready(function () {
     loadAllItemsForComboBox();
     getAllCustomersForComboBox();
     getOrderCount();
+    $("#discount").val(0);
 })
 
 let customers;
 let items;
 let cartItems = [];
-let orders=[];
+let orders = [];
 
 function setOrderId(orderCount) {
     $("#orderDate").val(new Date().toISOString().slice(0, 10));
@@ -23,7 +24,7 @@ function getOrderCount() {
         url: "http://localhost:8080/pos_app/pages/order?option=orderCount",
         method: "get",
         success: function (resp) {
-            setOrderId(resp.ordersCount);
+            setOrderId(Number(resp.ordersCount));
         }
     });
 }//this function use to get an order count from database
@@ -33,7 +34,7 @@ function getOrders() {
         url: "http://localhost:8080/pos_app/pages/order?option=orders",
         method: "get",
         success: function (resp) {
-            orders=resp;
+            orders = resp;
             console.log(orders);
         }
     });
@@ -353,16 +354,17 @@ $("#place-order").click(function () {
         url: "http://localhost:8080/pos_app/pages/order?option=orders",
         method: "get",
         success: function (resp) {
-            orders=resp;
+            orders = resp;
             if (undefined === searchOrder(orderID)) {
+                console.log("hi")
                 if ($("#order-table>tr").length > 0 && $("#invoice-customerNIC").val() !== "Select NIC") {
                     if (Number(cash) >= Number(total) && cash !== "") {
                         let date = $("#orderDate").val();
                         let nic = $("#invoice-customerNIC").val();
                         let discount = $("#discount").val();
+                        console.log(discount)
                         let balance = $("#balance").val();
                         let newOrderDetails = {
-                            /*order table and order details table*/
                             "orderId": orderID,
                             "date": date,
                             "nic": nic,
@@ -371,9 +373,32 @@ $("#place-order").click(function () {
                             "cash": cash,
                             "discount": discount,
                             "balance": balance,
-                            /*order details table and update item qty*/
                             "cartItems": cartItems
                         }
+                        console.log("hi")
+                        $.ajax({
+                            url: "http://localhost:8080/pos_app/pages/order",
+                            method: "post",
+                            contentType: "application/json",
+                            data: JSON.stringify(newOrderDetails),
+                            success: function (resp) {
+                                clearItemSection();
+                                clearInvoiceSection();
+
+                                $("#order-table").empty();
+                                getOrderCount();
+
+                                $("#total").text("0.0");
+                                $("#subTotal").text("0.0");
+                                $("#cash").val("");
+                                $("#discount").val(0);
+                                $("#balance").val("");
+
+                                cartItems = [];
+
+                                alert(resp.message);
+                            }
+                        });
                     } else {
                         $("#cashAlert").text("This amount is not enough");
                     }
@@ -382,10 +407,9 @@ $("#place-order").click(function () {
                 }
             } else {
                 $("#orderIdAlert").text(`${orderID} already exits`);
-            }        }
+            }
+        }
     });
-
-
 });
 
 function searchOrder(orderID) {
