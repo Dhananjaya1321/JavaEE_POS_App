@@ -22,6 +22,8 @@ public class CustomerServletAPI extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM customer");
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -35,10 +37,23 @@ public class CustomerServletAPI extends HttpServlet {
                                 .add("address", resultSet.getString(4))
                 );
             }
-            resp.getWriter().print(arrayBuilder.build());
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Ok")
+                            .add("message", "Successfully loaded...!")
+                            .add("data", "[" + arrayBuilder.build() + "]")
+                            .build());
 
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 
@@ -85,6 +100,8 @@ public class CustomerServletAPI extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
         JsonReader reader = Json.createReader(req.getReader());
         JsonObject jsonObject = reader.readObject();
         String nic = jsonObject.getString("nic");
@@ -100,7 +117,7 @@ public class CustomerServletAPI extends HttpServlet {
             preparedStatement.setObject(4, nic);
             if (preparedStatement.executeUpdate() > 0) {
                 resp.getWriter().print(
-                        Json.createObjectBuilder()
+                        objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Updated...!")
                                 .add("data", "[]")
@@ -108,7 +125,15 @@ public class CustomerServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
 
     }
@@ -117,12 +142,14 @@ public class CustomerServletAPI extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE nic=?");
             preparedStatement.setObject(1, req.getParameter("nic"));
             if (preparedStatement.executeUpdate() > 0) {
                 resp.getWriter().print(
-                        Json.createObjectBuilder()
+                        objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Deleted...!")
                                 .add("data", "[]")
@@ -130,7 +157,15 @@ public class CustomerServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 

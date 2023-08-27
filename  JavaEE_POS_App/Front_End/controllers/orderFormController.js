@@ -29,7 +29,7 @@ function getOrderCount() {
     });
 }//this function use to get an order count from database
 
-function getOrders() {
+/*function getOrders() {
     $.ajax({
         url: "http://localhost:8080/pos_app/pages/order?option=orders",
         method: "get",
@@ -38,7 +38,7 @@ function getOrders() {
             console.log(orders);
         }
     });
-}
+}*/
 
 function loadAllItemsForComboBox() {
     $.ajax({
@@ -64,7 +64,7 @@ function loadAllItemsForComboBox() {
 
         }
     });
-}
+}//this function use to load items codes for combo box
 
 function getAllCustomersForComboBox() {
     $.ajax({
@@ -87,7 +87,7 @@ function getAllCustomersForComboBox() {
             }
         }
     });
-}
+}//this function use to load customers nic's for combo box
 
 /*invoice*/
 $("#invoice-customerNIC").click(function () {
@@ -436,6 +436,8 @@ $("#orderId").keydown(function (event) {
     $("#orderIdAlert").text("");
     if (event.key === "Enter") {
         let orderID = $("#orderId").val();
+
+        console.log("ok");
 
         $.ajax({
             url: "http://localhost:8080/pos_app/pages/order?option=orderDetails&orderID=" + orderID,

@@ -25,12 +25,18 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
         String option = req.getParameter("option");
+
+        System.out.println("option ok");
+
         try {
             switch (option) {
                 case "orders":
                     PreparedStatement preparedStatement1 = connection.prepareStatement("SELECT orderID FROM orders");
                     ResultSet resultSet1 = preparedStatement1.executeQuery();
                     JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+
+                    System.out.println("orders ok");
+
                     while (resultSet1.next()) {
                         arrayBuilder.add(
                                 Json.createObjectBuilder()
@@ -43,6 +49,9 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                     PreparedStatement preparedStatement2 = connection.prepareStatement("SELECT COUNT(orderID) as orderCount FROM orders");
                     ResultSet resultSet = preparedStatement2.executeQuery();
                     JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
+                    System.out.println("orderCount ok");
+
                     if (resultSet.next()) {
                         objectBuilder.add("ordersCount", resultSet.getString(1));
                     }
@@ -55,6 +64,8 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                     ResultSet order = getOrderStatement.executeQuery();
 
                     JsonArrayBuilder array = Json.createArrayBuilder();
+
+                    System.out.println("orderDetails ok");
 
                     if (order.next()) {
                         String date = order.getString(2);
@@ -75,9 +86,14 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                                 .add("discount", discount)
                                 .build()
                         );
+
+                        System.out.println(1);
+
                         PreparedStatement getOrderDetailsStatement = connection.prepareStatement("SELECT * FROM orderDetails WHERE orderID=?");
                         getOrderDetailsStatement.setObject(1, orderID);
                         ResultSet orderDetails = getOrderDetailsStatement.executeQuery();
+
+                        System.out.println(2);
 
                         JsonArrayBuilder orderDetailsArray = Json.createArrayBuilder();
                         while (orderDetails.next()) {
@@ -90,7 +106,9 @@ public class PurchaseOrderServletAPI extends HttpServlet {
 
                             ResultSet itemDetails = getItemStatement.executeQuery();
 
-                            String itemName=null;
+                            System.out.println(3);
+
+                            String itemName = null;
                             if (itemDetails.next()) {
                                 itemName = itemDetails.getString(1);
                             }
@@ -106,6 +124,8 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                         }
                         array.add(orderDetailsArray.build());
 
+                        System.out.println(4);
+
                         PreparedStatement getCustomerDetailsStatement = connection.prepareStatement("SELECT * FROM customer WHERE nic=?");
                         getCustomerDetailsStatement.setObject(1, nic);
                         ResultSet customerDetails = getCustomerDetailsStatement.executeQuery();
@@ -114,7 +134,7 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                             String tel = customerDetails.getString(3);
                             String address = customerDetails.getString(4);
 
-                            System.out.println(cusName + address);
+                            System.out.println(5);
 
                             array.add(
                                     Json.createObjectBuilder()
@@ -156,7 +176,6 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         try {
             try {
                 connection.setAutoCommit(false);
-
                 PreparedStatement orderStatement = connection.prepareStatement("INSERT INTO orders VALUES (?,?,?,?,?,?,?,?)");
                 orderStatement.setObject(1, orderId);
                 orderStatement.setObject(2, date);
@@ -168,6 +187,7 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                 orderStatement.setObject(8, discount);
 
                 if (orderStatement.executeUpdate() > 0) {
+
                     int count = 0;
                     JsonArray cartItems = jsonObject.getJsonArray("cartItems");
                     for (int i = 0; i < cartItems.size(); i++) {
@@ -189,6 +209,7 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                     }
                     if (count == cartItems.size()) {
                         count = 0;
+
                         for (int i = 0; i < cartItems.size(); i++) {
                             JsonObject cartItem = cartItems.getJsonObject(i);
 
@@ -231,8 +252,6 @@ public class PurchaseOrderServletAPI extends HttpServlet {
             }
         } catch (SQLException e) {
 
-        } finally {
-
         }
     }
 
@@ -251,5 +270,7 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
         resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
+
+        System.out.println("option ok");
     }
 }

@@ -96,9 +96,12 @@ function getAllCustomers() {
         url: "http://localhost:8080/pos_app/pages/customer",
         method: "get",
         success: function (rep) {
+
+            let array=JSON.parse(rep.data)[0];
+
             $("#customer-table-body").empty();
-            for (let i in rep) {
-                let customer = rep[i];
+            for (let i in array) {
+                let customer = array[i];
                 let nic = customer.nic;
                 let name = customer.name;
                 let tel = customer.tel;
