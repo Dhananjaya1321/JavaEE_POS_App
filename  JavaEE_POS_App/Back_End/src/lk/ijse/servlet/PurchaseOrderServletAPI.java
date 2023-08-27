@@ -1,7 +1,6 @@
 package lk.ijse.servlet;
 
 import lk.ijse.db.DBConnection;
-import sun.management.jdp.JdpJmxPacket;
 
 import javax.json.*;
 import javax.servlet.ServletException;
@@ -9,7 +8,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -43,7 +41,14 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                                         .add("orderID", resultSet1.getString(1))
                         );
                     }
-                    resp.getWriter().print(arrayBuilder.build());
+                    resp.getWriter().print(
+                            Json.createObjectBuilder()
+                                    .add("state", "Ok")
+                                    .add("message", "Successfully loaded...!")
+                                    .add("data", "[" + arrayBuilder.build() + "]")
+                                    .build()
+                    );
+
                     break;
                 case "orderCount":
                     PreparedStatement preparedStatement2 = connection.prepareStatement("SELECT COUNT(orderID) as orderCount FROM orders");
@@ -55,7 +60,13 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                     if (resultSet.next()) {
                         objectBuilder.add("ordersCount", resultSet.getString(1));
                     }
-                    resp.getWriter().print(objectBuilder.build());
+                    resp.getWriter().print(
+                            Json.createObjectBuilder()
+                                    .add("state", "Ok")
+                                    .add("message", "Successfully loaded...!")
+                                    .add("data", "[" + objectBuilder.build() + "]")
+                                    .build()
+                    );
                     break;
                 case "orderDetails":
                     String orderID = req.getParameter("orderID");
@@ -147,12 +158,25 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                         }
                     }
 
-                    resp.getWriter().print(array.build());
-
+                    resp.getWriter().print(
+                            Json.createObjectBuilder()
+                                    .add("state", "Ok")
+                                    .add("message", "Successfully loaded...!")
+                                    .add("data", "[" + array.build() + "]")
+                                    .build()
+                    );
                     break;
             }
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    Json.createObjectBuilder()
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 
@@ -251,7 +275,15 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                 connection.close();
             }
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    Json.createObjectBuilder()
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 
@@ -270,7 +302,5 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
         resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
-
-        System.out.println("option ok");
     }
 }

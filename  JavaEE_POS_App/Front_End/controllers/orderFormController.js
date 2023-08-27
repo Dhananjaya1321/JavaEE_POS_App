@@ -24,7 +24,7 @@ function getOrderCount() {
         url: "http://localhost:8080/pos_app/pages/order?option=orderCount",
         method: "get",
         success: function (resp) {
-            setOrderId(Number(resp.ordersCount));
+            setOrderId(Number(JSON.parse(resp.data)[0].ordersCount));
         }
     });
 }//this function use to get an order count from database
@@ -355,7 +355,8 @@ $("#place-order").click(function () {
         url: "http://localhost:8080/pos_app/pages/order?option=orders",
         method: "get",
         success: function (resp) {
-            orders = resp;
+            orders = JSON.parse(resp.data)[0];
+
             if (undefined === searchOrder(orderID)) {
                 console.log("hi")
                 if ($("#order-table>tr").length > 0 && $("#invoice-customerNIC").val() !== "Select NIC") {
@@ -443,7 +444,11 @@ $("#orderId").keydown(function (event) {
         $.ajax({
             url: "http://localhost:8080/pos_app/pages/order?option=orderDetails&orderID=" + orderID,
             method: "get",
-            success: function (array) {
+            success: function (resp) {
+
+                let array=JSON.parse(resp.data)[0];
+
+
                 if (array.length > 0) {
                     cartItems = array[1];
                     loadToCart();
