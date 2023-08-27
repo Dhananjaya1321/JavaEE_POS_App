@@ -7,9 +7,12 @@ function getAllItems() {
         url: "http://localhost:8080/pos_app/pages/item",
         method: "get",
         success: function (resp) {
+
+            let array=JSON.parse(resp.data)[0];
+
             $("#item-table-body").empty();
-            for (let i in resp) {
-                let item = resp[i];
+            for (let i in array) {
+                let item = array[i];
                 let code = item.code;
                 let name = item.name;
                 let price = item.price;

@@ -50,10 +50,11 @@ function loadAllItemsForComboBox() {
                 `<option>Select Code</option>`
             );
 
-            items = resp;
+            items = JSON.parse(resp.data)[0];
 
-            for (let i in resp) {
-                let item = resp[i];
+
+            for (let i in items) {
+                let item = items[i];
                 let code = item.code;
                 $("#item-itemCode").append(
                     `<option>${code}</option>`
@@ -76,10 +77,10 @@ function getAllCustomersForComboBox() {
                 `<option>Select NIC</option>`
             );
 
-            customers = resp;
+            customers = JSON.parse(resp.data)[0];
 
-            for (let i in resp) {
-                let customer = resp[i];
+            for (let i in customers) {
+                let customer = customers[i];
                 let nic = customer.nic;
                 $("#invoice-customerNIC").append(
                     `<option>${nic}</option>`
