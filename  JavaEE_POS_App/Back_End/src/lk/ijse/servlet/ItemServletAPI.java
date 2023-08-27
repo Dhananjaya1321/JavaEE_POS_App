@@ -22,21 +22,38 @@ public class ItemServletAPI extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM item");
             ResultSet resultSet = preparedStatement.executeQuery();
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             while (resultSet.next()) {
-                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                objectBuilder.add("code", resultSet.getString(1));
-                objectBuilder.add("name", resultSet.getString(2));
-                objectBuilder.add("price", resultSet.getString(3));
-                objectBuilder.add("qty", resultSet.getString(4));
-                arrayBuilder.add(objectBuilder.build());
+                arrayBuilder.add(Json.createObjectBuilder()
+                        .add("code", resultSet.getString(1))
+                        .add("name", resultSet.getString(2))
+                        .add("price", resultSet.getString(3))
+                        .add("qty", resultSet.getString(4))
+                        .build()
+                );
             }
-            resp.getWriter().print(arrayBuilder.build());
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Ok")
+                            .add("message", "Successfully loaded...!")
+                            .add("data", "[" + arrayBuilder.build() + "]")
+                            .build()
+            );
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 
@@ -44,6 +61,8 @@ public class ItemServletAPI extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
         String code = req.getParameter("code");
         String name = req.getParameter("name");
         double price = Double.parseDouble(req.getParameter("price"));
@@ -57,7 +76,7 @@ public class ItemServletAPI extends HttpServlet {
             preparedStatement.setObject(4, qty);
             if (preparedStatement.executeUpdate() > 0) {
                 resp.getWriter().print(
-                        Json.createObjectBuilder()
+                        objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Added...!")
                                 .add("data", "[]")
@@ -65,7 +84,15 @@ public class ItemServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 
@@ -73,6 +100,7 @@ public class ItemServletAPI extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         JsonReader reader = Json.createReader(req.getReader());
         JsonObject jsonObject = reader.readObject();
@@ -87,9 +115,9 @@ public class ItemServletAPI extends HttpServlet {
             preparedStatement.setObject(2, price);
             preparedStatement.setObject(3, qty);
             preparedStatement.setObject(4, code);
-            if (preparedStatement.executeUpdate() > 0){
+            if (preparedStatement.executeUpdate() > 0) {
                 resp.getWriter().print(
-                        Json.createObjectBuilder()
+                        objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Updated...!")
                                 .add("data", "[]")
@@ -97,7 +125,15 @@ public class ItemServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 
@@ -105,13 +141,14 @@ public class ItemServletAPI extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
-        String code=req.getParameter("code");
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        String code = req.getParameter("code");
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM item WHERE code=? ");
             preparedStatement.setObject(1, code);
-            if (preparedStatement.executeUpdate() > 0){
+            if (preparedStatement.executeUpdate() > 0) {
                 resp.getWriter().print(
-                        Json.createObjectBuilder()
+                        objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Deleted...!")
                                 .add("data", "[]")
@@ -119,7 +156,15 @@ public class ItemServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-
+            resp.addHeader("Content-Type", "application/json");
+            resp.setStatus(400);
+            resp.getWriter().print(
+                    objectBuilder
+                            .add("state", "Error")
+                            .add("message", e.getMessage())
+                            .add("data", "[]")
+                            .build()
+            );
         }
     }
 
