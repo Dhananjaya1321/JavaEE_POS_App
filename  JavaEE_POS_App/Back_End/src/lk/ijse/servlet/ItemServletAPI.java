@@ -18,14 +18,15 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/item")
 public class ItemServletAPI extends HttpServlet {
-    ServletContext servletContext = getServletContext();
-    BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
+
 
         try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM item");
@@ -48,7 +49,6 @@ public class ItemServletAPI extends HttpServlet {
                             .build()
             );
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -62,15 +62,14 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         String code = req.getParameter("code");
         String name = req.getParameter("name");
         double price = Double.parseDouble(req.getParameter("price"));
         int qty = Integer.parseInt(req.getParameter("qty"));
-
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
         try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO item VALUES (?,?,?,?)");
             preparedStatement.setObject(1, code);
@@ -87,7 +86,6 @@ public class ItemServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -101,8 +99,6 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         JsonReader reader = Json.createReader(req.getReader());
@@ -111,6 +107,9 @@ public class ItemServletAPI extends HttpServlet {
         String name = jsonObject.getString("name");
         double price = Double.parseDouble(jsonObject.getString("price"));
         int qty = Integer.parseInt(jsonObject.getString("qty"));
+
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
         try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE item SET name=?,price=?,qty=? WHERE code=?");
@@ -128,7 +127,6 @@ public class ItemServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -142,10 +140,10 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         String code = req.getParameter("code");
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
         try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM item WHERE code=? ");
             preparedStatement.setObject(1, code);
@@ -159,7 +157,6 @@ public class ItemServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -169,12 +166,5 @@ public class ItemServletAPI extends HttpServlet {
                             .build()
             );
         }
-    }
-
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
-        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 }

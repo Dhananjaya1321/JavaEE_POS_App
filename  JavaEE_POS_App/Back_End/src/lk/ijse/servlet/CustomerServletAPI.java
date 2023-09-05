@@ -18,14 +18,13 @@ import java.sql.SQLException;
 @WebServlet(urlPatterns = "/pages/customer")
 public class CustomerServletAPI extends HttpServlet {
 
-    ServletContext servletContext = getServletContext();
-    BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
         try (Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM customer");
@@ -48,7 +47,6 @@ public class CustomerServletAPI extends HttpServlet {
                             .build());
 
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -62,8 +60,6 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         String nic = req.getParameter("nic");
         String name = req.getParameter("name");
         String tel = req.getParameter("tel");
@@ -71,6 +67,8 @@ public class CustomerServletAPI extends HttpServlet {
         System.out.println(nic + name + address + tel);
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
         try(Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO customer VALUES (?,?,?,?)");
@@ -89,7 +87,6 @@ public class CustomerServletAPI extends HttpServlet {
             }
 
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -103,8 +100,6 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         JsonReader reader = Json.createReader(req.getReader());
@@ -113,6 +108,9 @@ public class CustomerServletAPI extends HttpServlet {
         String name = jsonObject.getString("name");
         String tel = jsonObject.getString("tel");
         String address = jsonObject.getString("address");
+
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
         try (Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE customer SET name=?,tel=?,address=? WHERE nic=?");
@@ -130,7 +128,6 @@ public class CustomerServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -145,9 +142,10 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
         try (Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE nic=?");
@@ -162,7 +160,6 @@ public class CustomerServletAPI extends HttpServlet {
                 );
             }
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     objectBuilder
@@ -172,12 +169,5 @@ public class CustomerServletAPI extends HttpServlet {
                             .build()
             );
         }
-    }
-
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
-        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 }

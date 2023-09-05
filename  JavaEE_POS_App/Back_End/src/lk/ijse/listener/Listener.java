@@ -11,15 +11,16 @@ import javax.servlet.annotation.WebListener;
 public class Listener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        BasicDataSource pool = new BasicDataSource();
+        ServletContext servletContext = servletContextEvent.getServletContext();
+
+        BasicDataSource pool=new BasicDataSource();
         pool.setDriverClassName("com.mysql.jdbc.Driver");
-        pool.setUrl("jdbc:mysql://localhost/spa");
+        pool.setUrl("jdbc:mysql://localhost:3306/spa");
         pool.setUsername("root");
         pool.setPassword("1234");
-        pool.setInitialSize(10);
-        pool.setMaxTotal(10);
+        pool.setInitialSize(3);
+        pool.setMaxTotal(3);
 
-        ServletContext servletContext = servletContextEvent.getServletContext();
         servletContext.setAttribute("dbcp",pool);
     }
 

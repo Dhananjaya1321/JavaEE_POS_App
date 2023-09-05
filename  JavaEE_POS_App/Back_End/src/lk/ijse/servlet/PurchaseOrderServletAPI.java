@@ -17,15 +17,13 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/order")
 public class PurchaseOrderServletAPI extends HttpServlet {
-    ServletContext servletContext = getServletContext();
-    BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
         String option = req.getParameter("option");
-
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
         try (Connection connection=dbcp.getConnection()){
             switch (option) {
                 case "orders":
@@ -168,7 +166,6 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                     break;
             }
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     Json.createObjectBuilder()
@@ -182,9 +179,6 @@ public class PurchaseOrderServletAPI extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Content-Type", "application/json");
-
         JsonReader reader = Json.createReader(req.getReader());
         JsonObject jsonObject = reader.readObject();
 
@@ -196,6 +190,9 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         double cash = Double.parseDouble(jsonObject.getString("cash"));
         int discount = Integer.parseInt(jsonObject.getString("discount"));
         double balance = Double.parseDouble(jsonObject.getString("balance"));
+
+        ServletContext servletContext = getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
         try (Connection connection=dbcp.getConnection()){
             try {
@@ -275,7 +272,6 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                 connection.close();
             }
         } catch (SQLException e) {
-            resp.addHeader("Content-Type", "application/json");
             resp.setStatus(400);
             resp.getWriter().print(
                     Json.createObjectBuilder()
@@ -285,22 +281,5 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                             .build()
             );
         }
-    }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-    }
-
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Access-Control-Allow-Methods", "PUT,DELETE");
-        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 }
