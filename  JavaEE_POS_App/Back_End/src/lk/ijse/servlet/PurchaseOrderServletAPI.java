@@ -1,8 +1,9 @@
 package lk.ijse.servlet;
 
-import lk.ijse.db.DBConnection;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.json.*;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,7 +17,8 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/order")
 public class PurchaseOrderServletAPI extends HttpServlet {
-    Connection connection = DBConnection.getDbConnection().getConnection();
+    ServletContext servletContext = getServletContext();
+    BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -24,9 +26,7 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         resp.addHeader("Content-Type", "application/json");
         String option = req.getParameter("option");
 
-        System.out.println("option ok");
-
-        try {
+        try (Connection connection=dbcp.getConnection()){
             switch (option) {
                 case "orders":
                     PreparedStatement preparedStatement1 = connection.prepareStatement("SELECT orderID FROM orders");
@@ -197,7 +197,7 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         int discount = Integer.parseInt(jsonObject.getString("discount"));
         double balance = Double.parseDouble(jsonObject.getString("balance"));
 
-        try {
+        try (Connection connection=dbcp.getConnection()){
             try {
                 connection.setAutoCommit(false);
                 PreparedStatement orderStatement = connection.prepareStatement("INSERT INTO orders VALUES (?,?,?,?,?,?,?,?)");

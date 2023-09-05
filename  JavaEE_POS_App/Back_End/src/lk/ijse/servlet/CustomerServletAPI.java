@@ -1,8 +1,9 @@
 package lk.ijse.servlet;
 
-import lk.ijse.db.DBConnection;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.json.*;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,11 +17,9 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/customer")
 public class CustomerServletAPI extends HttpServlet {
-    Connection connection = DBConnection.getDbConnection().getConnection();
 
-    public CustomerServletAPI() {
-        System.out.println("constrictor");
-    }
+    ServletContext servletContext = getServletContext();
+    BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -28,7 +27,7 @@ public class CustomerServletAPI extends HttpServlet {
         resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
-        try {
+        try (Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM customer");
             ResultSet resultSet = preparedStatement.executeQuery();
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -71,7 +70,9 @@ public class CustomerServletAPI extends HttpServlet {
         String address = req.getParameter("address");
         System.out.println(nic + name + address + tel);
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-        try {
+
+
+        try(Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO customer VALUES (?,?,?,?)");
             preparedStatement.setObject(1, nic);
             preparedStatement.setObject(2, name);
@@ -113,7 +114,7 @@ public class CustomerServletAPI extends HttpServlet {
         String tel = jsonObject.getString("tel");
         String address = jsonObject.getString("address");
 
-        try {
+        try (Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE customer SET name=?,tel=?,address=? WHERE nic=?");
             preparedStatement.setObject(1, name);
             preparedStatement.setObject(2, tel);
@@ -148,7 +149,7 @@ public class CustomerServletAPI extends HttpServlet {
         resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
-        try {
+        try (Connection connection = dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE nic=?");
             preparedStatement.setObject(1, req.getParameter("nic"));
             if (preparedStatement.executeUpdate() > 0) {

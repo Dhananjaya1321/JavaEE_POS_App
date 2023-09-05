@@ -1,11 +1,14 @@
 package lk.ijse.db;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import javax.servlet.ServletContext;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    private static DBConnection dbConnection;
+    /*private static DBConnection dbConnection;
     private Connection connection;
 
     private DBConnection() {
@@ -23,5 +26,5 @@ public class DBConnection {
     }
     public Connection getConnection(){
         return connection;
-    }
+    }*/
 }

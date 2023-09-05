@@ -1,8 +1,10 @@
 package lk.ijse.servlet;
 
-import lk.ijse.db.DBConnection;
+
+import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.json.*;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,7 +18,8 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/item")
 public class ItemServletAPI extends HttpServlet {
-    Connection connection = DBConnection.getDbConnection().getConnection();
+    ServletContext servletContext = getServletContext();
+    BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -24,7 +27,7 @@ public class ItemServletAPI extends HttpServlet {
         resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
-        try {
+        try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM item");
             ResultSet resultSet = preparedStatement.executeQuery();
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -68,7 +71,7 @@ public class ItemServletAPI extends HttpServlet {
         double price = Double.parseDouble(req.getParameter("price"));
         int qty = Integer.parseInt(req.getParameter("qty"));
 
-        try {
+        try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO item VALUES (?,?,?,?)");
             preparedStatement.setObject(1, code);
             preparedStatement.setObject(2, name);
@@ -109,7 +112,7 @@ public class ItemServletAPI extends HttpServlet {
         double price = Double.parseDouble(jsonObject.getString("price"));
         int qty = Integer.parseInt(jsonObject.getString("qty"));
 
-        try {
+        try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE item SET name=?,price=?,qty=? WHERE code=?");
             preparedStatement.setObject(1, name);
             preparedStatement.setObject(2, price);
@@ -143,7 +146,7 @@ public class ItemServletAPI extends HttpServlet {
         resp.addHeader("Content-Type", "application/json");
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         String code = req.getParameter("code");
-        try {
+        try (Connection connection=dbcp.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM item WHERE code=? ");
             preparedStatement.setObject(1, code);
             if (preparedStatement.executeUpdate() > 0) {
