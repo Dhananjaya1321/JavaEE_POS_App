@@ -358,7 +358,7 @@ $("#place-order").click(function () {
             orders = JSON.parse(resp.data)[0];
 
             if (undefined === searchOrder(orderID)) {
-                console.log("hi")
+                console.log("hi");
                 if ($("#order-table>tr").length > 0 && $("#invoice-customerNIC").val() !== "Select NIC") {
                     if (Number(cash) >= Number(total) && cash !== "") {
                         let date = $("#orderDate").val();

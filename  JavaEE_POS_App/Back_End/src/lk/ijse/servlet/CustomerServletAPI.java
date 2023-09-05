@@ -18,6 +18,10 @@ import java.sql.SQLException;
 public class CustomerServletAPI extends HttpServlet {
     Connection connection = DBConnection.getDbConnection().getConnection();
 
+    public CustomerServletAPI() {
+        System.out.println("constrictor");
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
