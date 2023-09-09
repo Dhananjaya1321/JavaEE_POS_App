@@ -1,5 +1,7 @@
 package lk.ijse.dao;
 
+import lk.ijse.dao.castom.impl.CustomerDAOImpl;
+
 public class FactoryDAO {
     private static FactoryDAO dao;
 
@@ -10,7 +12,7 @@ public class FactoryDAO {
     public static SuperDAO getInstance(DAOTypes types) {
         switch (types) {
             case CUSTOMER:
-                return null;
+                return new CustomerDAOImpl();
             case ITEM:
                 return null;
             default:

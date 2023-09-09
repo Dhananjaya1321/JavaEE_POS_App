@@ -1,4 +1,4 @@
-package lk.ijse.bo.castom.impl;
+package lk.ijse.bo;
 
 public interface SuperBO {
 }
