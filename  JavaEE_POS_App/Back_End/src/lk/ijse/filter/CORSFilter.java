@@ -22,10 +22,6 @@ public class CORSFilter implements Filter {
 
         filterChain.doFilter(servletRequest,servletResponse);
 
-
-
-        System.out.println(method);
-
         if (method.equals("OPTIONS")) {
             response.setStatus(200);
             response.addHeader("Access-Control-Allow-Origin", "*");

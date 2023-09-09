@@ -96,7 +96,6 @@ function getAllCustomers() {
         url: "http://localhost:8080/pos_app/pages/customer",
         method: "get",
         success: function (rep) {
-
             let array=JSON.parse(rep.data)[0];
 
             $("#customer-table-body").empty();
