@@ -9,9 +9,15 @@ import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class Listener implements ServletContextListener {
+    static ServletContext servletContext;
+
+    public static ServletContext getServletContext() {
+        return servletContext;
+    }
+
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        ServletContext servletContext = servletContextEvent.getServletContext();
+         servletContext = servletContextEvent.getServletContext();
 
         BasicDataSource pool=new BasicDataSource();
         pool.setDriverClassName("com.mysql.jdbc.Driver");
