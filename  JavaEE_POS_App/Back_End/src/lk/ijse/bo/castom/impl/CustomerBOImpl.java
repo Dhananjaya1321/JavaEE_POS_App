@@ -11,7 +11,12 @@ import java.sql.SQLException;
 
 public class CustomerBOImpl implements CustomerBO {
     private final CustomerDAOImpl customerDAO = (CustomerDAOImpl) FactoryDAO.getFactoryDAO().getInstance(DAOTypes.CUSTOMER);
+    @Override
     public boolean addCustomer(CustomerDTO dto) throws SQLException {
         return customerDAO.add(new Customer(dto.getNic(), dto.getName(), dto.getTel(), dto.getAddress()));
+    }
+    @Override
+    public boolean updateCustomer(CustomerDTO dto) throws SQLException {
+        return customerDAO.update(new Customer(dto.getNic(), dto.getName(), dto.getTel(), dto.getAddress()));
     }
 }

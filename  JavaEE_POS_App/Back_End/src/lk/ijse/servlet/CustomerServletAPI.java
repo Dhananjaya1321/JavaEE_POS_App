@@ -101,28 +101,22 @@ public class CustomerServletAPI extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        JsonObject jsonObject = Json.createReader(req.getReader()).readObject();
 
-        JsonReader reader = Json.createReader(req.getReader());
-        JsonObject jsonObject = reader.readObject();
-        String nic = jsonObject.getString("nic");
-        String name = jsonObject.getString("name");
-        String tel = jsonObject.getString("tel");
-        String address = jsonObject.getString("address");
-
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-
-        try (Connection connection = dbcp.getConnection()){
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE customer SET name=?,tel=?,address=? WHERE nic=?");
-            preparedStatement.setObject(1, name);
-            preparedStatement.setObject(2, tel);
-            preparedStatement.setObject(3, address);
-            preparedStatement.setObject(4, nic);
-            if (preparedStatement.executeUpdate() > 0) {
+        try {
+            if (customerBO.updateCustomer(new CustomerDTO(jsonObject.getString("nic"),jsonObject.getString("name"),jsonObject.getString("tel"),jsonObject.getString("address")))) {
                 resp.getWriter().print(
                         objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Updated...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }else{
+                resp.getWriter().print(
+                        objectBuilder
+                                .add("state", "Error")
+                                .add("message", "Not Added...!")
                                 .add("data", "[]")
                                 .build()
                 );
@@ -137,7 +131,6 @@ public class CustomerServletAPI extends HttpServlet {
                             .build()
             );
         }
-
     }
 
     @Override
