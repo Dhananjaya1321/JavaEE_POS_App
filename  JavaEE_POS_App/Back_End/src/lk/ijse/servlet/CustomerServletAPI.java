@@ -1,5 +1,10 @@
 package lk.ijse.servlet;
 
+import lk.ijse.bo.BOTypes;
+import lk.ijse.bo.FactoryBO;
+import lk.ijse.bo.SuperBO;
+import lk.ijse.bo.castom.impl.CustomerBOImpl;
+import lk.ijse.dto.CustomerDTO;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.json.*;
@@ -17,7 +22,7 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/customer")
 public class CustomerServletAPI extends HttpServlet {
-
+    CustomerBOImpl customerBO = (CustomerBOImpl) FactoryBO.getFactoryBO().getInstance(BOTypes.CUSTOMER);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -60,27 +65,22 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String nic = req.getParameter("nic");
-        String name = req.getParameter("name");
-        String tel = req.getParameter("tel");
-        String address = req.getParameter("address");
-        System.out.println(nic + name + address + tel);
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-
-        try(Connection connection = dbcp.getConnection()){
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO customer VALUES (?,?,?,?)");
-            preparedStatement.setObject(1, nic);
-            preparedStatement.setObject(2, name);
-            preparedStatement.setObject(3, tel);
-            preparedStatement.setObject(4, address);
-            if (preparedStatement.executeUpdate() > 0) {
+        try{
+            if (customerBO.addCustomer(new CustomerDTO(req.getParameter("nic"),req.getParameter("name"),req.getParameter("tel"),req.getParameter("address")))) {
                 resp.getWriter().print(
                         objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Added...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }else {
+                resp.getWriter().print(
+                        objectBuilder
+                                .add("state", "Error")
+                                .add("message", "Not Added...!")
                                 .add("data", "[]")
                                 .build()
                 );
