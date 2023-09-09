@@ -1,4 +1,4 @@
-package lk.ijse.dao.castom.impl;
+package lk.ijse.dao;
 
 public enum DAOTypes {
     CUSTOMER,ITEM
