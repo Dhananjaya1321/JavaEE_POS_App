@@ -19,4 +19,8 @@ public class CustomerBOImpl implements CustomerBO {
     public boolean updateCustomer(CustomerDTO dto) throws SQLException {
         return customerDAO.update(new Customer(dto.getNic(), dto.getName(), dto.getTel(), dto.getAddress()));
     }
+    @Override
+    public boolean deleteCustomer(CustomerDTO dto) throws SQLException {
+        return customerDAO.delete(new Customer(dto.getNic()));
+    }
 }

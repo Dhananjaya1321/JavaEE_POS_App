@@ -16,6 +16,10 @@ public class CustomerDTO {
         this.address = address;
     }
 
+    public CustomerDTO(String nic) {
+        this.nic = nic;
+    }
+
     public String getNic() {
         return nic;
     }

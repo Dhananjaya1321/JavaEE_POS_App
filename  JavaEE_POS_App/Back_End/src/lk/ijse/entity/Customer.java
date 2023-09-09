@@ -16,6 +16,10 @@ public class Customer {
         this.address = address;
     }
 
+    public Customer(String nic) {
+        this.nic = nic;
+    }
+
     public String getNic() {
         return nic;
     }

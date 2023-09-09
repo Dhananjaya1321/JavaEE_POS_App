@@ -116,7 +116,7 @@ public class CustomerServletAPI extends HttpServlet {
                 resp.getWriter().print(
                         objectBuilder
                                 .add("state", "Error")
-                                .add("message", "Not Added...!")
+                                .add("message", "Not Updated...!")
                                 .add("data", "[]")
                                 .build()
                 );
@@ -137,17 +137,22 @@ public class CustomerServletAPI extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
-        try (Connection connection = dbcp.getConnection()){
-            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE nic=?");
-            preparedStatement.setObject(1, req.getParameter("nic"));
-            if (preparedStatement.executeUpdate() > 0) {
+
+        try {
+            if (customerBO.deleteCustomer(new CustomerDTO(req.getParameter("nic")))) {
                 resp.getWriter().print(
                         objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Deleted...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }else {
+                resp.getWriter().print(
+                        objectBuilder
+                                .add("state", "Error")
+                                .add("message", "Not Deleted...!")
                                 .add("data", "[]")
                                 .build()
                 );
