@@ -9,6 +9,7 @@ import lk.ijse.dto.ItemDTO;
 import lk.ijse.entity.Item;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class ItemBOImpl implements ItemBO {
     private final ItemDAOImpl itemDAO = (ItemDAOImpl) FactoryDAO.getFactoryDAO().getInstance(DAOTypes.ITEM);
@@ -21,8 +22,19 @@ public class ItemBOImpl implements ItemBO {
     public boolean updateItem(ItemDTO dto) throws SQLException {
         return itemDAO.update(new Item(dto.getCode(), dto.getName(), dto.getPrice(), dto.getQty()));
     }
+
     @Override
     public boolean deleteItem(ItemDTO dto) throws SQLException {
         return itemDAO.delete(new Item(dto.getCode()));
+    }
+
+    @Override
+    public ArrayList<ItemDTO> getAllItems() throws SQLException {
+        ArrayList<Item> all = itemDAO.getAll();
+        ArrayList<ItemDTO> itemDTOS = new ArrayList<>();
+        for (Item i:all) {
+            itemDTOS.add(new ItemDTO(i.getCode(),i.getName(),i.getPrice(),i.getQty()));
+        }
+        return itemDTOS;
     }
 }

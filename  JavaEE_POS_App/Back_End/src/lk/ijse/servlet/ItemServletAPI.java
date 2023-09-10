@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @WebServlet(urlPatterns = "/pages/item")
 public class ItemServletAPI extends HttpServlet {
@@ -27,24 +28,19 @@ public class ItemServletAPI extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-
-
-        try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM item");
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try {
+            ArrayList<ItemDTO> allItems = itemBO.getAllItems();
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            while (resultSet.next()) {
-                arrayBuilder.add(Json.createObjectBuilder()
-                        .add("code", resultSet.getString(1))
-                        .add("name", resultSet.getString(2))
-                        .add("price", resultSet.getString(3))
-                        .add("qty", resultSet.getString(4))
+            for (ItemDTO i:allItems) {
+                arrayBuilder.add(
+                        Json.createObjectBuilder()
+                        .add("code", i.getCode())
+                        .add("name", i.getName())
+                        .add("price", i.getPrice())
+                        .add("qty",i.getQty())
                         .build()
                 );
             }
-
             resp.getWriter().print(ResponseUtil.getResJsonObject("Ok","Successfully loaded...!",arrayBuilder.build()));
         } catch (SQLException e) {
             resp.setStatus(400);
