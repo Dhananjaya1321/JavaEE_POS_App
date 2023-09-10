@@ -5,6 +5,7 @@ import lk.ijse.bo.FactoryBO;
 import lk.ijse.bo.SuperBO;
 import lk.ijse.bo.castom.impl.CustomerBOImpl;
 import lk.ijse.dto.CustomerDTO;
+import lk.ijse.util.ResponseUtil;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.json.*;
@@ -22,11 +23,10 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/customer")
 public class CustomerServletAPI extends HttpServlet {
-    CustomerBOImpl customerBO = (CustomerBOImpl) FactoryBO.getFactoryBO().getInstance(BOTypes.CUSTOMER);
+    private final CustomerBOImpl customerBO = (CustomerBOImpl) FactoryBO.getFactoryBO().getInstance(BOTypes.CUSTOMER);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         ServletContext servletContext = getServletContext();
         BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
@@ -44,128 +44,54 @@ public class CustomerServletAPI extends HttpServlet {
                                 .add("address", resultSet.getString(4))
                 );
             }
-            resp.getWriter().print(
-                    objectBuilder
-                            .add("state", "Ok")
-                            .add("message", "Successfully loaded...!")
-                            .add("data", "[" + arrayBuilder.build() + "]")
-                            .build());
-
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Successfully loaded...!",arrayBuilder.build()));
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(
-                    objectBuilder
-                            .add("state", "Error")
-                            .add("message", e.getMessage())
-                            .add("data", "[]")
-                            .build()
-            );
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-
         try{
             if (customerBO.addCustomer(new CustomerDTO(req.getParameter("nic"),req.getParameter("name"),req.getParameter("tel"),req.getParameter("address")))) {
-                resp.getWriter().print(
-                        objectBuilder
-                                .add("state", "Ok")
-                                .add("message", "Successfully Added...!")
-                                .add("data", "[]")
-                                .build()
-                );
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok","Successfully Added...!"));
             }else {
-                resp.getWriter().print(
-                        objectBuilder
-                                .add("state", "Error")
-                                .add("message", "Not Added...!")
-                                .add("data", "[]")
-                                .build()
-                );
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Not Added...!"));
             }
-
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(
-                    objectBuilder
-                            .add("state", "Error")
-                            .add("message", e.getMessage())
-                            .add("data", "[]")
-                            .build()
-            );
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
         }
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         JsonObject jsonObject = Json.createReader(req.getReader()).readObject();
 
         try {
             if (customerBO.updateCustomer(new CustomerDTO(jsonObject.getString("nic"),jsonObject.getString("name"),jsonObject.getString("tel"),jsonObject.getString("address")))) {
-                resp.getWriter().print(
-                        objectBuilder
-                                .add("state", "Ok")
-                                .add("message", "Successfully Updated...!")
-                                .add("data", "[]")
-                                .build()
-                );
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok","Successfully Updated...!"));
             }else{
-                resp.getWriter().print(
-                        objectBuilder
-                                .add("state", "Error")
-                                .add("message", "Not Updated...!")
-                                .add("data", "[]")
-                                .build()
-                );
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Not Updated...!"));
             }
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(
-                    objectBuilder
-                            .add("state", "Error")
-                            .add("message", e.getMessage())
-                            .add("data", "[]")
-                            .build()
-            );
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
         }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-
-
-
         try {
             if (customerBO.deleteCustomer(new CustomerDTO(req.getParameter("nic")))) {
-                resp.getWriter().print(
-                        objectBuilder
-                                .add("state", "Ok")
-                                .add("message", "Successfully Deleted...!")
-                                .add("data", "[]")
-                                .build()
-                );
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok","Successfully Deleted...!"));
             }else {
-                resp.getWriter().print(
-                        objectBuilder
-                                .add("state", "Error")
-                                .add("message", "Not Deleted...!")
-                                .add("data", "[]")
-                                .build()
-                );
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Not Deleted...!"));
             }
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(
-                    objectBuilder
-                            .add("state", "Error")
-                            .add("message", e.getMessage())
-                            .add("data", "[]")
-                            .build()
-            );
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
         }
     }
 }
