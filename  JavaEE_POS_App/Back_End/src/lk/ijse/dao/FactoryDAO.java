@@ -1,6 +1,7 @@
 package lk.ijse.dao;
 
 import lk.ijse.dao.castom.impl.CustomerDAOImpl;
+import lk.ijse.dao.castom.impl.ItemDAOImpl;
 
 public class FactoryDAO {
     private static FactoryDAO factoryDAO;
@@ -20,7 +21,7 @@ public class FactoryDAO {
             case CUSTOMER:
                 return new CustomerDAOImpl();
             case ITEM:
-                return null;
+                return new ItemDAOImpl();
             default:
                 return null;
         }

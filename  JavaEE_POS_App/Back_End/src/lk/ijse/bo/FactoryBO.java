@@ -1,6 +1,7 @@
 package lk.ijse.bo;
 
 import lk.ijse.bo.castom.impl.CustomerBOImpl;
+import lk.ijse.bo.castom.impl.ItemBOImpl;
 
 public class FactoryBO {
     private static FactoryBO factoryBO;
@@ -20,7 +21,7 @@ public class FactoryBO {
             case CUSTOMER:
                 return new CustomerBOImpl();
             case ITEM:
-                return null;
+                return new ItemBOImpl();
             default:
                 return null;
         }

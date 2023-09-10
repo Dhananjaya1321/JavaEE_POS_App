@@ -9,5 +9,5 @@ public interface SQLUtil<T> extends SuperDAO {
     boolean add(T to) throws SQLException;
     boolean update(T to) throws SQLException;
     boolean delete(T to) throws SQLException;
-    ArrayList<T> getAll();
+    ArrayList<T> getAll() throws SQLException;
 }

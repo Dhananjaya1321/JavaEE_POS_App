@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @WebServlet(urlPatterns = "/pages/customer")
 public class CustomerServletAPI extends HttpServlet {
@@ -27,41 +28,30 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-
-        try (Connection connection = dbcp.getConnection()){
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM customer");
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try {
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            while (resultSet.next()) {
-                arrayBuilder.add(
-                        Json.createObjectBuilder()
-                                .add("nic", resultSet.getString(1))
-                                .add("name", resultSet.getString(2))
-                                .add("tel", resultSet.getString(3))
-                                .add("address", resultSet.getString(4))
-                );
+            ArrayList<CustomerDTO> allCustomers = customerBO.getAllCustomers();
+            for (CustomerDTO c : allCustomers) {
+                arrayBuilder.add(Json.createObjectBuilder().add("nic", c.getNic()).add("name", c.getName()).add("tel", c.getTel()).add("address", c.getAddress()));
             }
-            resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Successfully loaded...!",arrayBuilder.build()));
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error", "Successfully loaded...!", arrayBuilder.build()));
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error", e.getMessage()));
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try{
-            if (customerBO.addCustomer(new CustomerDTO(req.getParameter("nic"),req.getParameter("name"),req.getParameter("tel"),req.getParameter("address")))) {
-                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok","Successfully Added...!"));
-            }else {
-                resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Not Added...!"));
+        try {
+            if (customerBO.addCustomer(new CustomerDTO(req.getParameter("nic"), req.getParameter("name"), req.getParameter("tel"), req.getParameter("address")))) {
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok", "Successfully Added...!"));
+            } else {
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Error", "Not Added...!"));
             }
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error", e.getMessage()));
         }
     }
 
@@ -70,14 +60,14 @@ public class CustomerServletAPI extends HttpServlet {
         JsonObject jsonObject = Json.createReader(req.getReader()).readObject();
 
         try {
-            if (customerBO.updateCustomer(new CustomerDTO(jsonObject.getString("nic"),jsonObject.getString("name"),jsonObject.getString("tel"),jsonObject.getString("address")))) {
-                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok","Successfully Updated...!"));
-            }else{
-                resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Not Updated...!"));
+            if (customerBO.updateCustomer(new CustomerDTO(jsonObject.getString("nic"), jsonObject.getString("name"), jsonObject.getString("tel"), jsonObject.getString("address")))) {
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok", "Successfully Updated...!"));
+            } else {
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Error", "Not Updated...!"));
             }
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error", e.getMessage()));
         }
     }
 
@@ -85,13 +75,13 @@ public class CustomerServletAPI extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             if (customerBO.deleteCustomer(new CustomerDTO(req.getParameter("nic")))) {
-                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok","Successfully Deleted...!"));
-            }else {
-                resp.getWriter().print(ResponseUtil.getResJsonObject("Error","Not Deleted...!"));
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Ok", "Successfully Deleted...!"));
+            } else {
+                resp.getWriter().print(ResponseUtil.getResJsonObject("Error", "Not Deleted...!"));
             }
         } catch (SQLException e) {
             resp.setStatus(400);
-            resp.getWriter().print(ResponseUtil.getResJsonObject("Error",e.getMessage()));
+            resp.getWriter().print(ResponseUtil.getResJsonObject("Error", e.getMessage()));
         }
     }
 }
