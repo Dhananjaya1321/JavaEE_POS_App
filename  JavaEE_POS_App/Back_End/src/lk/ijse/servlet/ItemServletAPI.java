@@ -1,6 +1,10 @@
 package lk.ijse.servlet;
 
 
+import lk.ijse.bo.BOTypes;
+import lk.ijse.bo.FactoryBO;
+import lk.ijse.bo.castom.impl.ItemBOImpl;
+import lk.ijse.dto.ItemDTO;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.json.*;
@@ -18,7 +22,7 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = "/pages/item")
 public class ItemServletAPI extends HttpServlet {
-
+    private final ItemBOImpl itemBO = (ItemBOImpl) FactoryBO.getFactoryBO().getInstance(BOTypes.ITEM);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -28,7 +32,7 @@ public class ItemServletAPI extends HttpServlet {
         BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
 
-        try (Connection connection=dbcp.getConnection()){
+        try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM item");
             ResultSet resultSet = preparedStatement.executeQuery();
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -68,19 +72,21 @@ public class ItemServletAPI extends HttpServlet {
         String name = req.getParameter("name");
         double price = Double.parseDouble(req.getParameter("price"));
         int qty = Integer.parseInt(req.getParameter("qty"));
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-        try (Connection connection=dbcp.getConnection()){
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO item VALUES (?,?,?,?)");
-            preparedStatement.setObject(1, code);
-            preparedStatement.setObject(2, name);
-            preparedStatement.setObject(3, price);
-            preparedStatement.setObject(4, qty);
-            if (preparedStatement.executeUpdate() > 0) {
+
+        try {
+            if (itemBO.addItem(new ItemDTO(code, name, price, qty))) {
                 resp.getWriter().print(
                         objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Added...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }else {
+                resp.getWriter().print(
+                        objectBuilder
+                                .add("state", "Error")
+                                .add("message", "Not Added...!")
                                 .add("data", "[]")
                                 .build()
                 );
@@ -100,28 +106,22 @@ public class ItemServletAPI extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        JsonObject jsonObject = Json.createReader(req.getReader()).readObject();
 
-        JsonReader reader = Json.createReader(req.getReader());
-        JsonObject jsonObject = reader.readObject();
-        String code = jsonObject.getString("code");
-        String name = jsonObject.getString("name");
-        double price = Double.parseDouble(jsonObject.getString("price"));
-        int qty = Integer.parseInt(jsonObject.getString("qty"));
-
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-
-        try (Connection connection=dbcp.getConnection()){
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE item SET name=?,price=?,qty=? WHERE code=?");
-            preparedStatement.setObject(1, name);
-            preparedStatement.setObject(2, price);
-            preparedStatement.setObject(3, qty);
-            preparedStatement.setObject(4, code);
-            if (preparedStatement.executeUpdate() > 0) {
+        try  {
+            if (itemBO.updateItem(new ItemDTO(jsonObject.getString("code"),jsonObject.getString("name"),Double.parseDouble(jsonObject.getString("price")),Integer.parseInt(jsonObject.getString("qty"))))) {
                 resp.getWriter().print(
                         objectBuilder
                                 .add("state", "Ok")
                                 .add("message", "Successfully Updated...!")
+                                .add("data", "[]")
+                                .build()
+                );
+            }else {
+                resp.getWriter().print(
+                        objectBuilder
+                                .add("state", "Error")
+                                .add("message", "Not Updated...!")
                                 .add("data", "[]")
                                 .build()
                 );
@@ -141,13 +141,8 @@ public class ItemServletAPI extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-        String code = req.getParameter("code");
-        ServletContext servletContext = getServletContext();
-        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-        try (Connection connection=dbcp.getConnection()){
-            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM item WHERE code=? ");
-            preparedStatement.setObject(1, code);
-            if (preparedStatement.executeUpdate() > 0) {
+        try  {
+            if (itemBO.deleteItem(new ItemDTO(req.getParameter("code")))) {
                 resp.getWriter().print(
                         objectBuilder
                                 .add("state", "Ok")
