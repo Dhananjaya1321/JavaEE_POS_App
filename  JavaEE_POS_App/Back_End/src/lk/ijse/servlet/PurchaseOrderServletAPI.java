@@ -192,10 +192,14 @@ public class PurchaseOrderServletAPI extends HttpServlet {
 
         String orderId = jsonObject.getString("orderId");
         CustomDTO dto = new CustomDTO(
-                orderId, jsonObject.getString("date"),
-                jsonObject.getString("nic"), Double.parseDouble(jsonObject.getString("total")),
-                Double.parseDouble(jsonObject.getString("subTotal")), Double.parseDouble(jsonObject.getString("cash")),
-                Integer.parseInt(jsonObject.getString("discount")), Double.parseDouble(jsonObject.getString("balance"))
+                orderId,
+                jsonObject.getString("date"),
+                jsonObject.getString("nic"),
+                Double.parseDouble(jsonObject.getString("total")),
+                Double.parseDouble(jsonObject.getString("subTotal")),
+                Double.parseDouble(jsonObject.getString("cash")),
+                Integer.parseInt(jsonObject.getString("discount")),
+                Double.parseDouble(jsonObject.getString("balance"))
         );
 
         ServletContext servletContext = getServletContext();
@@ -203,17 +207,11 @@ public class PurchaseOrderServletAPI extends HttpServlet {
 
         try (Connection connection = dbcp.getConnection()) {
             try {
-                connection.setAutoCommit(false);
-                PreparedStatement orderStatement = connection.prepareStatement("INSERT INTO orders VALUES (?,?,?,?,?,?,?,?)");
 
                 if (orderStatement.executeUpdate() > 0) {
-
-                    int count = 0;
                     JsonArray cartItems = jsonObject.getJsonArray("cartItems");
                     for (int i = 0; i < cartItems.size(); i++) {
-                        PreparedStatement orderDetailsStatement = connection.prepareStatement("INSERT INTO orderdetails VALUES (?,?,?,?)");
                         JsonObject cartItem = cartItems.getJsonObject(i);
-
                         customDTOS.add(
                                 new CustomDTO(
                                         orderId,
@@ -222,14 +220,8 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                                         Integer.parseInt(cartItem.getString("itemQty"))
                                 )
                         );
-
-                        if (orderDetailsStatement.executeUpdate() > 0) {
-                            count++;
-                        }
                     }
                     if (count == cartItems.size()) {
-                        count = 0;
-
                         for (int i = 0; i < cartItems.size(); i++) {
                             JsonObject cartItem = cartItems.getJsonObject(i);
 
