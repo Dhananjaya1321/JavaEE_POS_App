@@ -2,6 +2,7 @@ package lk.ijse.dao.castom.impl;
 
 import lk.ijse.dao.castom.OrderDAO;
 import lk.ijse.entity.CustomEntity;
+import lk.ijse.util.CrudUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 public class OrderDAOImpl implements OrderDAO {
     @Override
     public boolean add(CustomEntity to, Connection connection) throws SQLException {
-        return false;
+        return CrudUtil.setQuery(connection, "INSERT INTO orders VALUES (?,?,?,?,?,?,?,?)");
     }
 
     @Override

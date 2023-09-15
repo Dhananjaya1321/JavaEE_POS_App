@@ -32,15 +32,10 @@ public class OrderBOImpl implements OrderBO {
             connection.setAutoCommit(false);
             boolean orderIsAdded = orderDAO.add(new CustomEntity(dto.getOrderId(), dto.getDate(), dto.getNic(), dto.getTotal(), dto.getSubTotal(), dto.getCash(), dto.getDiscount(), dto.getBalance()), connection);
 
-                    /*CrudUtil.setQuery(
-                    connection,
-                    "INSERT INTO orders VALUES (?,?,?,?,?,?,?,?)");*/
-
             if (orderIsAdded) {
                 int count = 0;
                 ArrayList<CustomDTO> customDTOS = dto.getCustomDTOS();
                 for (CustomDTO c : customDTOS) {
-                    //                    PreparedStatement orderDetailsStatement = connection.prepareStatement("INSERT INTO orderdetails VALUES (?,?,?,?)");
                     boolean orderDetailsIsAdded = queryDAO.save(new CustomEntity(c.getOrderId(), c.getCode(), c.getPrice(), c.getQty()), connection);
                     if (orderDetailsIsAdded) {
                         count++;
