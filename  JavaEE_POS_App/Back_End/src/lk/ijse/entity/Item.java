@@ -13,6 +13,11 @@ public class Item {
         this.code = code;
     }
 
+    public Item(String code,int qty) {
+        this.code = code;
+        this.qty = qty;
+    }
+
     public Item(String code, String name, double price, int qty) {
         this.code = code;
         this.name = name;

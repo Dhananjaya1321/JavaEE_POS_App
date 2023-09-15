@@ -34,4 +34,9 @@ public class ItemDAOImpl implements ItemDAO {
         }
         return items;
     }
+    @Override
+    public Item getItem(Item to, Connection connection) throws SQLException {
+        ResultSet resultSet = CrudUtil.setQuery(connection,"SELECT name,price,qty FROM item WHERE code=?",to.getCode());
+        return new Item(to.getCode(),resultSet.getString(1),resultSet.getDouble(2),resultSet.getInt(3));
+    }
 }

@@ -20,6 +20,10 @@ public class ItemDTO {
         this.qty = qty;
     }
 
+    public ItemDTO(int qty) {
+        this.qty = qty;
+    }
+
     public String getCode() {
         return code;
     }

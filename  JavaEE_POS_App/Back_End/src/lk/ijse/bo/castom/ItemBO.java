@@ -15,4 +15,6 @@ public interface ItemBO extends SuperBO {
     boolean deleteItem(ItemDTO dto,Connection connection) throws SQLException;
 
     ArrayList<ItemDTO> getAllItems(Connection connection) throws SQLException;
+
+    ItemDTO getItem(ItemDTO dto, Connection connection) throws SQLException;
 }

@@ -1,5 +1,5 @@
 package lk.ijse.dao;
 
 public enum DAOTypes {
-    CUSTOMER,ITEM
+    CUSTOMER,ITEM,ORDER,QUERY
 }

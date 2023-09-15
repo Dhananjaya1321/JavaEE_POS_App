@@ -189,75 +189,35 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         JsonObject jsonObject = reader.readObject();
 
         ArrayList<CustomDTO> customDTOS = new ArrayList<>();
-
         String orderId = jsonObject.getString("orderId");
-        CustomDTO dto = new CustomDTO(
-                orderId,
-                jsonObject.getString("date"),
-                jsonObject.getString("nic"),
-                Double.parseDouble(jsonObject.getString("total")),
-                Double.parseDouble(jsonObject.getString("subTotal")),
-                Double.parseDouble(jsonObject.getString("cash")),
-                Integer.parseInt(jsonObject.getString("discount")),
-                Double.parseDouble(jsonObject.getString("balance"))
-        );
+        CustomDTO dto = new CustomDTO(orderId, jsonObject.getString("date"), jsonObject.getString("nic"), Double.parseDouble(jsonObject.getString("total")), Double.parseDouble(jsonObject.getString("subTotal")), Double.parseDouble(jsonObject.getString("cash")), Integer.parseInt(jsonObject.getString("discount")), Double.parseDouble(jsonObject.getString("balance")));
 
         ServletContext servletContext = getServletContext();
         BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-
         try (Connection connection = dbcp.getConnection()) {
             try {
-
-                if (orderStatement.executeUpdate() > 0) {
-                    JsonArray cartItems = jsonObject.getJsonArray("cartItems");
-                    for (int i = 0; i < cartItems.size(); i++) {
-                        JsonObject cartItem = cartItems.getJsonObject(i);
-                        customDTOS.add(
-                                new CustomDTO(
-                                        orderId,
-                                        cartItem.getString("itemCode"),
-                                        Double.parseDouble(cartItem.getString("itemPrice")),
-                                        Integer.parseInt(cartItem.getString("itemQty"))
-                                )
-                        );
-                    }
-                    if (count == cartItems.size()) {
-                        for (int i = 0; i < cartItems.size(); i++) {
-                            JsonObject cartItem = cartItems.getJsonObject(i);
-
-                            String itemCode = cartItem.getString("itemCode");
-                            int itemQty = Integer.parseInt(cartItem.getString("itemQty"));
-
-                            PreparedStatement preparedStatement = connection.prepareStatement("SELECT qty FROM item WHERE code=?");
-                            preparedStatement.setObject(1, itemCode);
-
-                            ResultSet resultSet = preparedStatement.executeQuery();
-                            System.out.println(resultSet.next());/////////
-                            int oldQTY = Integer.parseInt(resultSet.getString(1));
-
-                            PreparedStatement updateItemsStatement = connection.prepareStatement("UPDATE item SET qty=? WHERE code=?");
-                            updateItemsStatement.setObject(1, oldQTY - itemQty);
-                            updateItemsStatement.setObject(2, itemCode);
-
-                            if (updateItemsStatement.executeUpdate() > 0) {
-                                count++;
-                            }
-                        }
-                        dto.setCustomDTOS(customDTOS);
-
-
-                        orderBO.saveOrder(dto);
-                        if (count == cartItems.size()) {
-                            connection.commit();
-                            resp.getWriter().print(
-                                    Json.createObjectBuilder()
-                                            .add("state", "Ok")
-                                            .add("message", "Successfully Added...!")
-                                            .add("data", "[]")
-                                            .build()
-                            );
-                        }
-                    }
+                JsonArray cartItems = jsonObject.getJsonArray("cartItems");
+                for (int i = 0; i < cartItems.size(); i++) {
+                    JsonObject cartItem = cartItems.getJsonObject(i);
+                    customDTOS.add(
+                            new CustomDTO(
+                                    orderId,
+                                    cartItem.getString("itemCode"),
+                                    Double.parseDouble(cartItem.getString("itemPrice")),
+                                    Integer.parseInt(cartItem.getString("itemQty"))
+                            )
+                    );
+                }
+                dto.setCustomDTOS(customDTOS);
+                if (orderBO.saveOrder(dto, connection)) {
+                    connection.commit();
+                    resp.getWriter().print(
+                            Json.createObjectBuilder()
+                                    .add("state", "Ok")
+                                    .add("message", "Successfully Added...!")
+                                    .add("data", "[]")
+                                    .build()
+                    );
                 }
             } catch (Exception e) {
                 connection.rollback();
