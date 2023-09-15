@@ -5,6 +5,7 @@ import lk.ijse.bo.FactoryBO;
 import lk.ijse.bo.SuperBO;
 import lk.ijse.bo.castom.impl.CustomerBOImpl;
 import lk.ijse.dto.CustomerDTO;
+import lk.ijse.listener.Listener;
 import lk.ijse.util.ResponseUtil;
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -28,9 +29,11 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
+        ServletContext servletContext = Listener.getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
+        try (Connection connection= dbcp.getConnection()){
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            ArrayList<CustomerDTO> allCustomers = customerBO.getAllCustomers();
+            ArrayList<CustomerDTO> allCustomers = customerBO.getAllCustomers(connection);
             for (CustomerDTO c : allCustomers) {
                 arrayBuilder.add(Json.createObjectBuilder().add("nic", c.getNic()).add("name", c.getName()).add("tel", c.getTel()).add("address", c.getAddress()));
             }
@@ -43,8 +46,10 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            if (customerBO.addCustomer(new CustomerDTO(req.getParameter("nic"), req.getParameter("name"), req.getParameter("tel"), req.getParameter("address")))) {
+        ServletContext servletContext = Listener.getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
+        try (Connection connection= dbcp.getConnection()){
+            if (customerBO.addCustomer(new CustomerDTO(req.getParameter("nic"), req.getParameter("name"), req.getParameter("tel"), req.getParameter("address")),connection)) {
                 resp.getWriter().print(ResponseUtil.getResJsonObject("Ok", "Successfully Added...!"));
             } else {
                 resp.getWriter().print(ResponseUtil.getResJsonObject("Error", "Not Added...!"));
@@ -59,8 +64,10 @@ public class CustomerServletAPI extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject jsonObject = Json.createReader(req.getReader()).readObject();
 
-        try {
-            if (customerBO.updateCustomer(new CustomerDTO(jsonObject.getString("nic"), jsonObject.getString("name"), jsonObject.getString("tel"), jsonObject.getString("address")))) {
+        ServletContext servletContext = Listener.getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
+        try (Connection connection= dbcp.getConnection()){
+            if (customerBO.updateCustomer(new CustomerDTO(jsonObject.getString("nic"), jsonObject.getString("name"), jsonObject.getString("tel"), jsonObject.getString("address")),connection)) {
                 resp.getWriter().print(ResponseUtil.getResJsonObject("Ok", "Successfully Updated...!"));
             } else {
                 resp.getWriter().print(ResponseUtil.getResJsonObject("Error", "Not Updated...!"));
@@ -73,8 +80,10 @@ public class CustomerServletAPI extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            if (customerBO.deleteCustomer(new CustomerDTO(req.getParameter("nic")))) {
+        ServletContext servletContext = Listener.getServletContext();
+        BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
+        try (Connection connection= dbcp.getConnection()){
+            if (customerBO.deleteCustomer(new CustomerDTO(req.getParameter("nic")),connection)) {
                 resp.getWriter().print(ResponseUtil.getResJsonObject("Ok", "Successfully Deleted...!"));
             } else {
                 resp.getWriter().print(ResponseUtil.getResJsonObject("Error", "Not Deleted...!"));

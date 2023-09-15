@@ -8,6 +8,7 @@ import lk.ijse.dao.castom.impl.ItemDAOImpl;
 import lk.ijse.dto.ItemDTO;
 import lk.ijse.entity.Item;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -15,22 +16,22 @@ public class ItemBOImpl implements ItemBO {
     private final ItemDAOImpl itemDAO = (ItemDAOImpl) FactoryDAO.getFactoryDAO().getInstance(DAOTypes.ITEM);
 
     @Override
-    public boolean addItem(ItemDTO dto) throws SQLException {
-        return itemDAO.add(new Item(dto.getCode(), dto.getName(), dto.getPrice(), dto.getQty()));
+    public boolean addItem(ItemDTO dto, Connection connection) throws SQLException {
+        return itemDAO.add(new Item(dto.getCode(), dto.getName(), dto.getPrice(), dto.getQty()),connection);
     }
     @Override
-    public boolean updateItem(ItemDTO dto) throws SQLException {
-        return itemDAO.update(new Item(dto.getCode(), dto.getName(), dto.getPrice(), dto.getQty()));
-    }
-
-    @Override
-    public boolean deleteItem(ItemDTO dto) throws SQLException {
-        return itemDAO.delete(new Item(dto.getCode()));
+    public boolean updateItem(ItemDTO dto,Connection connection) throws SQLException {
+        return itemDAO.update(new Item(dto.getCode(), dto.getName(), dto.getPrice(), dto.getQty()),connection);
     }
 
     @Override
-    public ArrayList<ItemDTO> getAllItems() throws SQLException {
-        ArrayList<Item> all = itemDAO.getAll();
+    public boolean deleteItem(ItemDTO dto,Connection connection) throws SQLException {
+        return itemDAO.delete(new Item(dto.getCode()),connection);
+    }
+
+    @Override
+    public ArrayList<ItemDTO> getAllItems(Connection connection) throws SQLException {
+        ArrayList<Item> all = itemDAO.getAll(connection);
         ArrayList<ItemDTO> itemDTOS = new ArrayList<>();
         for (Item i:all) {
             itemDTOS.add(new ItemDTO(i.getCode(),i.getName(),i.getPrice(),i.getQty()));
