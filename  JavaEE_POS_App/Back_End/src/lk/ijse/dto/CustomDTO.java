@@ -1,5 +1,7 @@
 package lk.ijse.dto;
 
+import java.util.ArrayList;
+
 public class CustomDTO {
     private String nic;
     private String customerName;
@@ -16,8 +18,26 @@ public class CustomDTO {
     private double cash;
     private int discount;
     private double balance;
-
+    private ArrayList<CustomDTO> customDTOS;
     public CustomDTO() {
+    }
+
+    public CustomDTO(String orderId, String date, String nic, double total, double subTotal, double cash, int discount, double balance) {
+        this.orderId=orderId;
+        this.date=date;
+        this.nic=nic;
+        this.total=total;
+        this.subTotal=subTotal;
+        this.cash=cash;
+        this.discount=discount;
+        this.balance=balance;
+    }
+
+    public CustomDTO(String orderId, String code,double price,int qty) {
+        this.orderId=orderId;
+        this.code=code;
+        this.price=price;
+        this.qty=qty;
     }
 
 
@@ -160,5 +180,13 @@ public class CustomDTO {
                 ", discount=" + discount +
                 ", balance=" + balance +
                 '}';
+    }
+
+    public ArrayList<CustomDTO> getCustomDTOS() {
+        return customDTOS;
+    }
+
+    public void setCustomDTOS(ArrayList<CustomDTO> customDTOS) {
+        this.customDTOS = customDTOS;
     }
 }

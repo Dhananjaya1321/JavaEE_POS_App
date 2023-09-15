@@ -1,5 +1,10 @@
 package lk.ijse.servlet;
 
+import lk.ijse.bo.BOTypes;
+import lk.ijse.bo.FactoryBO;
+import lk.ijse.bo.SuperBO;
+import lk.ijse.bo.castom.impl.OrderBOImpl;
+import lk.ijse.dto.CustomDTO;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.json.*;
@@ -14,17 +19,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @WebServlet(urlPatterns = "/pages/order")
 public class PurchaseOrderServletAPI extends HttpServlet {
-
+    private final OrderBOImpl orderBO = (OrderBOImpl) FactoryBO.getFactoryBO().getInstance(BOTypes.ORDER);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String option = req.getParameter("option");
         ServletContext servletContext = getServletContext();
         BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
-        try (Connection connection=dbcp.getConnection()){
+        try (Connection connection = dbcp.getConnection()) {
             switch (option) {
                 case "orders":
                     PreparedStatement preparedStatement1 = connection.prepareStatement("SELECT orderID FROM orders");
@@ -182,30 +188,23 @@ public class PurchaseOrderServletAPI extends HttpServlet {
         JsonReader reader = Json.createReader(req.getReader());
         JsonObject jsonObject = reader.readObject();
 
+        ArrayList<CustomDTO> customDTOS = new ArrayList<>();
+
         String orderId = jsonObject.getString("orderId");
-        String date = jsonObject.getString("date");
-        String nic = jsonObject.getString("nic");
-        double total = Double.parseDouble(jsonObject.getString("total"));
-        double subTotal = Double.parseDouble(jsonObject.getString("subTotal"));
-        double cash = Double.parseDouble(jsonObject.getString("cash"));
-        int discount = Integer.parseInt(jsonObject.getString("discount"));
-        double balance = Double.parseDouble(jsonObject.getString("balance"));
+        CustomDTO dto = new CustomDTO(
+                orderId, jsonObject.getString("date"),
+                jsonObject.getString("nic"), Double.parseDouble(jsonObject.getString("total")),
+                Double.parseDouble(jsonObject.getString("subTotal")), Double.parseDouble(jsonObject.getString("cash")),
+                Integer.parseInt(jsonObject.getString("discount")), Double.parseDouble(jsonObject.getString("balance"))
+        );
 
         ServletContext servletContext = getServletContext();
         BasicDataSource dbcp = (BasicDataSource) servletContext.getAttribute("dbcp");
 
-        try (Connection connection=dbcp.getConnection()){
+        try (Connection connection = dbcp.getConnection()) {
             try {
                 connection.setAutoCommit(false);
                 PreparedStatement orderStatement = connection.prepareStatement("INSERT INTO orders VALUES (?,?,?,?,?,?,?,?)");
-                orderStatement.setObject(1, orderId);
-                orderStatement.setObject(2, date);
-                orderStatement.setObject(3, nic);
-                orderStatement.setObject(4, total);
-                orderStatement.setObject(5, subTotal);
-                orderStatement.setObject(6, cash);
-                orderStatement.setObject(7, balance);
-                orderStatement.setObject(8, discount);
 
                 if (orderStatement.executeUpdate() > 0) {
 
@@ -215,14 +214,14 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                         PreparedStatement orderDetailsStatement = connection.prepareStatement("INSERT INTO orderdetails VALUES (?,?,?,?)");
                         JsonObject cartItem = cartItems.getJsonObject(i);
 
-                        String itemCode = cartItem.getString("itemCode");
-                        double itemPrice = Double.parseDouble(cartItem.getString("itemPrice"));
-                        int itemQty = Integer.parseInt(cartItem.getString("itemQty"));
-
-                        orderDetailsStatement.setObject(1, orderId);
-                        orderDetailsStatement.setObject(2, itemCode);
-                        orderDetailsStatement.setObject(3, itemQty);
-                        orderDetailsStatement.setObject(4, itemPrice);
+                        customDTOS.add(
+                                new CustomDTO(
+                                        orderId,
+                                        cartItem.getString("itemCode"),
+                                        Double.parseDouble(cartItem.getString("itemPrice")),
+                                        Integer.parseInt(cartItem.getString("itemQty"))
+                                )
+                        );
 
                         if (orderDetailsStatement.executeUpdate() > 0) {
                             count++;
@@ -252,7 +251,10 @@ public class PurchaseOrderServletAPI extends HttpServlet {
                                 count++;
                             }
                         }
+                        dto.setCustomDTOS(customDTOS);
 
+
+                        orderBO.saveOrder(dto);
                         if (count == cartItems.size()) {
                             connection.commit();
                             resp.getWriter().print(
